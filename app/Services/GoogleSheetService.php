@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\LoanRecord;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -44,6 +45,42 @@ class GoogleSheetService
             Log::error('Failed to sync loan record to Google Sheets: ' . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * Sync a loan record model when a new loan is recorded.
+     */
+    public static function syncLoan(LoanRecord $loan): bool
+    {
+        $loan->loadMissing('item');
+
+        return static::syncLoanRecord([
+            'item_code'     => $loan->item?->item_code ?? '-',
+            'item_name'     => $loan->item?->name ?? '-',
+            'borrower_name' => $loan->borrower_name ?? '-',
+            'borrower_phone'=> $loan->borrower_phone ?? '-',
+            'loan_date'     => $loan->loan_date ? (is_string($loan->loan_date) ? $loan->loan_date : $loan->loan_date->toDateString()) : '-',
+            'return_date'   => $loan->return_date ? (is_string($loan->return_date) ? $loan->return_date : $loan->return_date->toDateString()) : '-',
+            'status'        => $loan->status ?? 'Active',
+        ]);
+    }
+
+    /**
+     * Sync a loan record model when a loan is returned.
+     */
+    public static function syncReturn(LoanRecord $loan): bool
+    {
+        $loan->loadMissing('item');
+
+        return static::syncLoanRecord([
+            'item_code'     => $loan->item?->item_code ?? '-',
+            'item_name'     => $loan->item?->name ?? '-',
+            'borrower_name' => $loan->borrower_name ?? '-',
+            'borrower_phone'=> $loan->borrower_phone ?? '-',
+            'loan_date'     => $loan->loan_date ? (is_string($loan->loan_date) ? $loan->loan_date : $loan->loan_date->toDateString()) : '-',
+            'return_date'   => $loan->return_date ? (is_string($loan->return_date) ? $loan->return_date : $loan->return_date->toDateString()) : now()->toDateString(),
+            'status'        => 'Returned',
+        ]);
     }
 
     /**
