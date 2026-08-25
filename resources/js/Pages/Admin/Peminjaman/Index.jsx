@@ -4,6 +4,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import StatusBadge from '@/Components/Admin/StatusBadge';
 import Modal from '@/Components/Admin/Modal';
 import Pagination from '@/Components/Admin/Pagination';
+import { useDebounce } from '@/Utils/debounce';
 
 const FILTER_LABELS = [
     { label: 'Semua', value: '' },
@@ -103,6 +104,7 @@ function LoanForm({ show, onClose, items_available }) {
 
 export default function PeminjamanIndex({ loans, filters, items_available }) {
     const [showLoanForm, setShowLoanForm] = useState(false);
+    const [searchVal, setSearchVal] = useState(filters?.search ?? '');
 
     const handleReturn = (loan) => {
         if (!confirm(`Konfirmasi pengembalian barang "${loan.item?.name}" oleh ${loan.borrower_name}?`)) return;
@@ -113,8 +115,14 @@ export default function PeminjamanIndex({ loans, filters, items_available }) {
         router.get(route('admin.peminjaman.index'), { status: value, search: filters?.search ?? '' }, { preserveState: true, replace: true });
     };
 
-    const applySearch = (e) => {
-        router.get(route('admin.peminjaman.index'), { search: e.target.value, status: filters?.status ?? '' }, { preserveState: true, replace: true });
+    const debouncedSearch = useDebounce((val) => {
+        router.get(route('admin.peminjaman.index'), { search: val, status: filters?.status ?? '' }, { preserveState: true, replace: true });
+    }, 350);
+
+    const handleSearchChange = (e) => {
+        const val = e.target.value;
+        setSearchVal(val);
+        debouncedSearch(val);
     };
 
     const activeFilter = filters?.status ?? '';
@@ -146,8 +154,8 @@ export default function PeminjamanIndex({ loans, filters, items_available }) {
                         <input
                             className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border-base bg-surface text-body-md text-ink placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-primary"
                             placeholder="Cari barang atau peminjam..."
-                            defaultValue={filters?.search ?? ''}
-                            onChange={applySearch}
+                            value={searchVal}
+                            onChange={handleSearchChange}
                         />
                     </div>
                     <div className="flex gap-2 flex-wrap">
