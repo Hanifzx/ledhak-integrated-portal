@@ -224,7 +224,7 @@ export default function PeminjamanIndex({ loans, filters, items_available }) {
                                                 </button>
                                             )}
                                             {loan.status === 'Returned' && (
-                                                <span className="text-label-md text-status-ok font-medium">✓ Dikembalikan</span>
+                                                <span className="text-label-md text-status-ok font-medium">Dikembalikan</span>
                                             )}
                                         </td>
                                     </tr>
