@@ -44,14 +44,16 @@ export default function AdminLayout({ children, title = '' }) {
             {/* Sidebar */}
             <aside className="fixed left-0 top-0 h-screen w-[260px] bg-surface border-r border-border-base flex flex-col z-50">
                 {/* Brand */}
-                <div className="px-6 pt-6 pb-4 border-b border-border-base">
+                <div className="px-6 pt-5 pb-4 border-b border-border-base">
                     <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
-                            <span className="material-symbols-outlined text-on-primary text-[18px]">inventory_2</span>
-                        </div>
+                        <img
+                            src="/images/logo/Logo LeDHaK UNHAS.png"
+                            alt="Logo LeDHaK UNHAS"
+                            className="w-12 h-12 object-contain flex-shrink-0"
+                        />
                         <div>
-                            <p className="text-h3 text-ink leading-none">LeDHaK</p>
-                            <p className="text-label-caps text-muted mt-0.5">Inventory Portal</p>
+                            <p className="text-h3 text-ink leading-none font-bold">LeDHaK UNHAS</p>
+                            <p className="text-label-caps text-muted mt-1">Inventory Portal</p>
                         </div>
                     </div>
                 </div>
