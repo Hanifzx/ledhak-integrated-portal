@@ -2,6 +2,7 @@ const STATUS_MAP = {
     'Tersedia':  { bg: 'bg-status-ok-bg',   text: 'text-status-ok',   label: 'Tersedia' },
     'Dipinjam':  { bg: 'bg-status-err-bg',  text: 'text-status-err',  label: 'Dipinjam' },
     'Perbaikan': { bg: 'bg-status-warn-bg', text: 'text-status-warn', label: 'Perbaikan' },
+    'Hilang':    { bg: 'bg-surface-mid',    text: 'text-ink',         label: 'Hilang' },
     'Active':    { bg: 'bg-status-err-bg',  text: 'text-status-err',  label: 'Aktif' },
     'Returned':  { bg: 'bg-status-ok-bg',   text: 'text-status-ok',   label: 'Dikembalikan' },
     'Overdue':   { bg: 'bg-status-err-bg',  text: 'text-status-err',  label: 'Terlambat' },

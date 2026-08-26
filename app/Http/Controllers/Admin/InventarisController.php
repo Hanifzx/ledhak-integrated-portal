@@ -46,7 +46,7 @@ class InventarisController extends Controller
             'name'        => 'required|string|max:255',
             'item_code'   => 'nullable|string|unique:items,item_code|max:50',
             'category'    => 'required|string|max:100',
-            'status'      => 'in:Tersedia,Dipinjam,Perbaikan',
+            'status'      => 'in:Tersedia,Perbaikan,Hilang',  // Dipinjam diatur otomatis lewat Peminjaman
             'description' => 'nullable|string',
             'photo'       => 'nullable|image|mimes:jpeg,jpg,png,webp|max:1024',
         ]);
@@ -83,7 +83,7 @@ class InventarisController extends Controller
             'name'        => 'required|string|max:255',
             'item_code'   => "required|string|unique:items,item_code,{$item->id}|max:50",
             'category'    => 'required|string|max:100',
-            'status'      => 'in:Tersedia,Dipinjam,Perbaikan',
+            'status'      => 'in:Tersedia,Perbaikan,Hilang',  // Dipinjam diatur otomatis lewat Peminjaman
             'description' => 'nullable|string',
             'photo'       => 'nullable|image|mimes:jpeg,jpg,png,webp|max:1024',
         ]);
@@ -111,18 +111,30 @@ class InventarisController extends Controller
 
     public function updateStatus(Request $request, Item $item)
     {
-        $data = $request->validate([
-            'status' => 'required|in:Tersedia,Dipinjam,Perbaikan',
-            'notes'  => 'nullable|string|max:255',
-        ]);
+        $rules = [
+            'status' => 'required|in:Tersedia,Perbaikan,Hilang',
+            // Catatan wajib jika barang sedang dipinjam (butuh dokumentasi kejadian)
+            'notes'  => $item->status === 'Dipinjam' ? 'required|string|max:500' : 'nullable|string|max:500',
+        ];
+
+        $data = $request->validate($rules);
 
         $oldStatus = $item->status;
-        $item->update(['status' => $data['status']]);
+        $newStatus = $data['status'];
+
+        $item->update(['status' => $newStatus]);
+
+        // Log activity yang deskriptif sesuai skenario
+        if ($oldStatus === 'Dipinjam') {
+            $action = "Status diubah saat dipinjam: {$oldStatus} → {$newStatus}";
+        } else {
+            $action = "Status diubah: {$oldStatus} → {$newStatus}";
+        }
 
         InventoryLog::create([
             'item_id' => $item->id,
             'user_id' => Auth::id(),
-            'action'  => "Status diubah: {$oldStatus} → {$data['status']}",
+            'action'  => $action,
             'notes'   => $data['notes'] ?? '',
         ]);
 

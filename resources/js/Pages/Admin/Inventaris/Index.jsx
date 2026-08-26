@@ -5,9 +5,16 @@ import StatusBadge from '@/Components/Admin/StatusBadge';
 import Modal from '@/Components/Admin/Modal';
 import Pagination from '@/Components/Admin/Pagination';
 import { useDebounce } from '@/Utils/debounce';
+import { toastSuccess, toastError, TOAST_MESSAGES } from '@/Utils/toast';
+import ConfirmAction from '@/Components/Admin/ConfirmAction';
 
 const DEFAULT_PHOTO = '/images/assets/item_default.webp';
-const STATUS_OPTIONS = ['Tersedia', 'Dipinjam', 'Perbaikan'];
+// Status untuk dropdown tambah/edit barang baru
+const STATUS_OPTIONS = ['Tersedia', 'Perbaikan'];
+// Status modal untuk barang TIDAK sedang dipinjam
+const STATUS_MODAL_OPTIONS = ['Tersedia', 'Perbaikan', 'Hilang'];
+// Status modal khusus barang yang SEDANG dipinjam (skenario hilang/rusak saat dipinjam)
+const STATUS_MODAL_DIPINJAM_OPTIONS = ['Hilang', 'Perbaikan'];
 const CATEGORY_OPTIONS = [
     'Spanduk & Banner', 'Elektronik & Sound', 'Alat Tulis & Kantor',
     'Perlengkapan Acara', 'Peralatan Fotografi', 'Lain-lain',
@@ -87,126 +94,196 @@ function PhotoInput({ preview, onFileChange, error }) {
 }
 
 function ItemForm({ form, onPhotoChange, photoPreview, onSubmit, onClose, title }) {
+    const [showAlert, setShowAlert] = useState(false);
+
+    const handleClose = () => {
+        if (form.isDirty) {
+            setShowAlert(true);
+        } else {
+            onClose();
+        }
+    };
+
     return (
-        <Modal show title={title} onClose={onClose}>
-            <form onSubmit={onSubmit} className="space-y-4">
-                {/* Photo */}
-                <PhotoInput
-                    preview={photoPreview}
-                    onFileChange={onPhotoChange}
-                    error={form.errors.photo}
-                />
-                <div>
-                    <label className="block text-label-md text-muted mb-1">Nama Barang *</label>
-                    <input
-                        className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-surface"
-                        value={form.data.name}
-                        onChange={e => form.setData('name', e.target.value)}
-                        required
+        <>
+            <Modal show title={title} onClose={handleClose}>
+                <form onSubmit={onSubmit} className="space-y-4">
+                    {/* Photo */}
+                    <PhotoInput
+                        preview={photoPreview}
+                        onFileChange={onPhotoChange}
+                        error={form.errors.photo}
                     />
-                    {form.errors.name && <p className="text-label-md text-status-err mt-1">{form.errors.name}</p>}
-                </div>
-                <div>
-                    <label className="block text-label-md text-muted mb-1">Kode Barang (opsional)</label>
-                    <input
-                        className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-surface font-mono"
-                        value={form.data.item_code}
-                        onChange={e => form.setData('item_code', e.target.value)}
-                        placeholder="Auto-generate jika kosong"
-                    />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
                     <div>
-                        <label className="block text-label-md text-muted mb-1">Kategori *</label>
-                        <select
-                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
-                            value={form.data.category}
-                            onChange={e => form.setData('category', e.target.value)}
+                        <label className="block text-label-md text-muted mb-1">Nama Barang *</label>
+                        <input
+                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-surface"
+                            value={form.data.name}
+                            onChange={e => form.setData('name', e.target.value)}
                             required
-                        >
-                            <option value="">Pilih kategori</option>
-                            {CATEGORY_OPTIONS.map(c => <option key={c}>{c}</option>)}
-                        </select>
-                        {form.errors.category && <p className="text-label-md text-status-err mt-1">{form.errors.category}</p>}
+                        />
+                        {form.errors.name && <p className="text-label-md text-status-err mt-1">{form.errors.name}</p>}
                     </div>
                     <div>
-                        <label className="block text-label-md text-muted mb-1">Status *</label>
+                        <label className="block text-label-md text-muted mb-1">Kode Barang (opsional)</label>
+                        <input
+                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-surface font-mono"
+                            value={form.data.item_code}
+                            onChange={e => form.setData('item_code', e.target.value)}
+                            placeholder="Auto-generate jika kosong"
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-label-md text-muted mb-1">Kategori *</label>
+                            <select
+                                className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
+                                value={form.data.category}
+                                onChange={e => form.setData('category', e.target.value)}
+                                required
+                            >
+                                <option value="">Pilih kategori</option>
+                                {CATEGORY_OPTIONS.map(c => <option key={c}>{c}</option>)}
+                            </select>
+                            {form.errors.category && <p className="text-label-md text-status-err mt-1">{form.errors.category}</p>}
+                        </div>
+                        <div>
+                            <label className="block text-label-md text-muted mb-1">Status *</label>
+                            <select
+                                className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
+                                value={form.data.status}
+                                onChange={e => form.setData('status', e.target.value)}
+                            >
+                                {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-label-md text-muted mb-1">Deskripsi</label>
+                        <textarea
+                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface resize-none"
+                            rows={3}
+                            value={form.data.description}
+                            onChange={e => form.setData('description', e.target.value)}
+                        />
+                    </div>
+                    <div className="flex justify-end gap-2 pt-2">
+                        <button type="button" onClick={handleClose} className="px-4 py-2 rounded-lg text-body-sm text-muted border border-border-base hover:bg-bg transition-colors">
+                            Batal
+                        </button>
+                        <button type="submit" disabled={form.processing}
+                            className="px-5 py-2 rounded-lg text-body-sm bg-primary text-on-primary font-semibold hover:bg-primary-dark disabled:opacity-60 transition-colors"
+                        >
+                            {form.processing ? 'Menyimpan...' : 'Simpan'}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
+            <ConfirmAction
+                open={showAlert}
+                onOpenChange={setShowAlert}
+                onConfirm={onClose}
+                title="Tutup Form?"
+                description="Ada perubahan yang belum disimpan. Yakin ingin menutup? Perubahan Anda akan hilang."
+                confirmText="Tutup & Buang Perubahan"
+                cancelText="Kembali ke Form"
+                variant="destructive"
+            />
+        </>
+    );
+}
+
+function StatusModal({ item, onClose }) {
+    const isDipinjam = item?.status === 'Dipinjam';
+    const options = isDipinjam ? STATUS_MODAL_DIPINJAM_OPTIONS : STATUS_MODAL_OPTIONS;
+    const form = useForm({ status: isDipinjam ? 'Hilang' : (item?.status ?? 'Tersedia'), notes: '' });
+    const [showAlert, setShowAlert] = useState(false);
+
+    const submit = (e) => {
+        e.preventDefault();
+        form.patch(route('admin.inventaris.status', item.id), {
+            onSuccess: () => {
+                const m = TOAST_MESSAGES.statusUpdated;
+                toastSuccess(m.title, m.description);
+                onClose();
+            },
+            onError: () => toastError(TOAST_MESSAGES.failed.title, TOAST_MESSAGES.failed.description),
+        });
+    };
+
+    const handleClose = () => {
+        if (form.isDirty) {
+            setShowAlert(true);
+        } else {
+            onClose();
+        }
+    };
+
+    return (
+        <>
+            <Modal show title="Ubah Status Barang" onClose={handleClose} size="sm">
+                <form onSubmit={submit} className="space-y-4">
+                    <p className="text-body-sm text-muted">Barang: <span className="font-semibold text-ink">{item?.name}</span></p>
+
+                    {/* Peringatan khusus jika barang sedang dipinjam */}
+                    {isDipinjam && (
+                        <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-status-warn-bg border border-status-warn border-opacity-30">
+                            <span className="material-symbols-outlined text-status-warn text-[18px] mt-0.5">warning</span>
+                            <p className="text-label-md text-status-warn leading-relaxed">
+                                Barang ini sedang dipinjam. Mengubah status berarti Anda mengonfirmasi kejadian saat proses peminjaman (misalnya barang hilang atau rusak).
+                            </p>
+                        </div>
+                    )}
+
+                    <div>
+                        <label className="block text-label-md text-muted mb-1">Status Baru *</label>
                         <select
                             className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
                             value={form.data.status}
                             onChange={e => form.setData('status', e.target.value)}
                         >
-                            {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
+                            {options.map(s => <option key={s}>{s}</option>)}
                         </select>
+                        {form.errors.status && <p className="text-label-md text-status-err mt-1">{form.errors.status}</p>}
                     </div>
-                </div>
-                <div>
-                    <label className="block text-label-md text-muted mb-1">Deskripsi</label>
-                    <textarea
-                        className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface resize-none"
-                        rows={3}
-                        value={form.data.description}
-                        onChange={e => form.setData('description', e.target.value)}
-                    />
-                </div>
-                <div className="flex justify-end gap-2 pt-2">
-                    <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-body-sm text-muted border border-border-base hover:bg-bg transition-colors">
-                        Batal
-                    </button>
-                    <button type="submit" disabled={form.processing}
-                        className="px-5 py-2 rounded-lg text-body-sm bg-primary text-on-primary font-semibold hover:bg-primary-dark disabled:opacity-60 transition-colors"
-                    >
-                        {form.processing ? 'Menyimpan...' : 'Simpan'}
-                    </button>
-                </div>
-            </form>
-        </Modal>
+                    <div>
+                        <label className="block text-label-md text-muted mb-1">
+                            Catatan {isDipinjam && <span className="text-status-err">*</span>}
+                        </label>
+                        <input
+                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
+                            value={form.data.notes}
+                            onChange={e => form.setData('notes', e.target.value)}
+                            placeholder={isDipinjam ? 'Wajib: jelaskan kejadian yang terjadi...' : 'Alasan perubahan status...'}
+                            required={isDipinjam}
+                        />
+                        {form.errors.notes && <p className="text-label-md text-status-err mt-1">{form.errors.notes}</p>}
+                    </div>
+                    <div className="flex justify-end gap-2 pt-2">
+                        <button type="button" onClick={handleClose} className="px-4 py-2 rounded-lg text-body-sm text-muted border border-border-base hover:bg-bg transition-colors">Batal</button>
+                        <button type="submit" disabled={form.processing}
+                            className="px-5 py-2 rounded-lg text-body-sm bg-primary text-on-primary font-semibold hover:bg-primary-dark disabled:opacity-60 transition-colors"
+                        >
+                            {form.processing ? 'Menyimpan...' : 'Simpan Status'}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
+            <ConfirmAction
+                open={showAlert}
+                onOpenChange={setShowAlert}
+                onConfirm={onClose}
+                title="Batal Ubah Status?"
+                description="Ada perubahan yang belum disimpan. Yakin ingin menutup?"
+                confirmText="Tutup & Buang Perubahan"
+                cancelText="Kembali"
+                variant="destructive"
+            />
+        </>
     );
 }
 
-function StatusModal({ item, onClose }) {
-    const form = useForm({ status: item?.status ?? 'Tersedia', notes: '' });
-    const submit = (e) => {
-        e.preventDefault();
-        form.patch(route('admin.inventaris.status', item.id), { onSuccess: onClose });
-    };
-    return (
-        <Modal show title="Ubah Status Barang" onClose={onClose} size="sm">
-            <form onSubmit={submit} className="space-y-4">
-                <p className="text-body-sm text-muted">Barang: <span className="font-semibold text-ink">{item?.name}</span></p>
-                <div>
-                    <label className="block text-label-md text-muted mb-1">Status Baru *</label>
-                    <select
-                        className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
-                        value={form.data.status}
-                        onChange={e => form.setData('status', e.target.value)}
-                    >
-                        {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
-                    </select>
-                </div>
-                <div>
-                    <label className="block text-label-md text-muted mb-1">Catatan</label>
-                    <input
-                        className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
-                        value={form.data.notes}
-                        onChange={e => form.setData('notes', e.target.value)}
-                        placeholder="Alasan perubahan status..."
-                    />
-                </div>
-                <div className="flex justify-end gap-2 pt-2">
-                    <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-body-sm text-muted border border-border-base hover:bg-bg transition-colors">Batal</button>
-                    <button type="submit" disabled={form.processing}
-                        className="px-5 py-2 rounded-lg text-body-sm bg-primary text-on-primary font-semibold hover:bg-primary-dark disabled:opacity-60 transition-colors"
-                    >
-                        {form.processing ? 'Menyimpan...' : 'Update Status'}
-                    </button>
-                </div>
-            </form>
-        </Modal>
-    );
-}
-
-const FILTER_LABELS = ['Semua', 'Tersedia', 'Dipinjam', 'Perbaikan'];
+const FILTER_LABELS = ['Semua', 'Tersedia', 'Dipinjam', 'Perbaikan', 'Hilang'];
 
 export default function InventarisIndex({ items, filters }) {
     const [modal, setModal] = useState(null);
@@ -214,34 +291,46 @@ export default function InventarisIndex({ items, filters }) {
     const [editPhotoPreview, setEditPhotoPreview] = useState(null);
 
     const addForm = useForm({ name: '', item_code: '', category: '', status: 'Tersedia', description: '', photo: null });
-    const editForm = useForm({ name: '', item_code: '', category: '', status: 'Tersedia', description: '', photo: null });
+    const editForm = useForm({ name: '', item_code: '', category: '', status: 'Tersedia', description: '', photo: null, _method: 'PUT' });
 
     const openEdit = (item) => {
-        editForm.setData({ name: item.name, item_code: item.item_code, category: item.category, status: item.status, description: item.description ?? '', photo: null });
-        setEditPhotoPreview(item.photo_url ?? null);
+        editForm.setData({ name: item.name, item_code: item.item_code, category: item.category, status: item.status, description: item.description ?? '', photo: null, _method: 'PUT' });
+        setEditPhotoPreview(item.photo_url || null);
         setModal({ type: 'edit', item });
     };
 
     const handleAdd = (e) => {
         e.preventDefault();
         addForm.post(route('admin.inventaris.store'), {
-            forceFormData: true,
-            onSuccess: () => { addForm.reset(); setAddPhotoPreview(null); setModal(null); },
+            onSuccess: () => {
+                const m = TOAST_MESSAGES.itemAdded;
+                toastSuccess(m.title, m.description);
+                addForm.reset(); setAddPhotoPreview(null); setModal(null);
+            },
+            onError: () => toastError(TOAST_MESSAGES.failed.title, TOAST_MESSAGES.failed.description),
         });
     };
 
     const handleEdit = (e) => {
         e.preventDefault();
         editForm.post(route('admin.inventaris.update', modal.item.id), {
-            forceFormData: true,
-            data: { ...editForm.data, _method: 'PUT' },
-            onSuccess: () => setModal(null),
+            onSuccess: () => {
+                const m = TOAST_MESSAGES.itemUpdated;
+                toastSuccess(m.title, m.description);
+                setModal(null);
+            },
+            onError: () => toastError(TOAST_MESSAGES.failed.title, TOAST_MESSAGES.failed.description),
         });
     };
 
     const handleDelete = (item) => {
-        if (!confirm(`Hapus "${item.name}"? Tindakan ini tidak bisa dibatalkan.`)) return;
-        router.delete(route('admin.inventaris.destroy', item.id));
+        router.delete(route('admin.inventaris.destroy', item.id), {
+            onSuccess: () => {
+                const m = TOAST_MESSAGES.itemDeleted;
+                toastSuccess(m.title, m.description);
+            },
+            onError: () => toastError(TOAST_MESSAGES.failed.title, TOAST_MESSAGES.failed.description),
+        });
     };
 
     const applyFilter = (status) => {
@@ -318,7 +407,7 @@ export default function InventarisIndex({ items, filters }) {
                             <div className="p-4 flex gap-4 items-start">
                                 <div className="w-16 h-16 rounded-lg bg-bg flex-shrink-0 overflow-hidden border border-border-base">
                                     <img
-                                        src={item.photo_url ?? DEFAULT_PHOTO}
+                                        src={item.photo_url || DEFAULT_PHOTO}
                                         alt={item.name}
                                         className="w-full h-full object-cover"
                                     />
@@ -333,15 +422,25 @@ export default function InventarisIndex({ items, filters }) {
                                 </div>
                             </div>
                             <div className="border-t border-border-base px-4 py-2.5 flex gap-2 justify-end">
-                                <button onClick={() => setModal({ type: 'status', item })} className="text-label-md text-primary border border-primary px-3 py-1 rounded-lg hover:bg-primary-soft transition-colors font-medium">
+                                {/* Semua item bisa ubah status, termasuk Dipinjam (skenario hilang/rusak saat dipinjam) */}
+                                <button
+                                    onClick={() => setModal({ type: 'status', item })}
+                                    className="text-label-md text-primary border border-primary px-3 py-1 rounded-lg hover:bg-primary-soft transition-colors font-medium"
+                                >
                                     Ubah Status
                                 </button>
                                 <button onClick={() => openEdit(item)} className="text-label-md text-muted border border-border-base px-3 py-1 rounded-lg hover:bg-bg transition-colors font-medium">
                                     Edit
                                 </button>
-                                <button onClick={() => handleDelete(item)} className="text-label-md text-status-err border border-status-err-bg px-3 py-1 rounded-lg hover:bg-status-err-bg transition-colors font-medium">
-                                    Hapus
-                                </button>
+                                <ConfirmAction 
+                                    onConfirm={() => handleDelete(item)} 
+                                    title={`Hapus "${item.name}"?`} 
+                                    description="Tindakan ini tidak bisa dibatalkan."
+                                >
+                                    <button className="text-label-md text-status-err border border-status-err-bg px-3 py-1 rounded-lg hover:bg-status-err-bg transition-colors font-medium">
+                                        Hapus
+                                    </button>
+                                </ConfirmAction>
                             </div>
                         </div>
                     )) : (
