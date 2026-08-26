@@ -1,5 +1,4 @@
 import '../css/app.css';
-import 'goey-toast/styles.css';
 import './bootstrap';
 
 import { createInertiaApp } from '@inertiajs/react';
