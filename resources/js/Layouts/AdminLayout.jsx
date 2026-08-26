@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { Link, usePage, useForm } from '@inertiajs/react';
-import { GooeyToaster } from 'goey-toast';
+import { Toaster } from '@/components/ui/sonner';
+import { toastSuccess, toastError, toastInfo } from '@/Utils/toast';
 
 const navItems = [
     { routeName: 'dashboard',               icon: 'dashboard',   label: 'Beranda' },
@@ -31,8 +33,15 @@ function NavLink({ routeName, icon, label }) {
 }
 
 export default function AdminLayout({ children, title = '' }) {
-    const { auth } = usePage().props;
+    const { auth, flash } = usePage().props;
     const { post } = useForm();
+
+    // Auto-display flash messages from Laravel controllers
+    useEffect(() => {
+        if (flash?.success) toastSuccess(flash.success);
+        if (flash?.error)   toastError(flash.error);
+        if (flash?.info)    toastInfo(flash.info);
+    }, [flash]);
 
     const handleLogout = (e) => {
         e.preventDefault();
@@ -47,7 +56,7 @@ export default function AdminLayout({ children, title = '' }) {
                 <div className="px-6 pt-5 pb-4 border-b border-border-base">
                     <div className="flex items-center gap-3">
                         <img
-                            src="/images/logo/Logo LeDHaK UNHAS.png"
+                            src="/images/logo/logo LeDHaK UNHAS.webp"
                             alt="Logo LeDHaK UNHAS"
                             className="w-12 h-12 object-contain flex-shrink-0"
                         />
@@ -105,7 +114,7 @@ export default function AdminLayout({ children, title = '' }) {
                     {children}
                 </main>
             </div>
-            <GooeyToaster position="bottom-right" />
+            <Toaster />
         </div>
     );
 }
