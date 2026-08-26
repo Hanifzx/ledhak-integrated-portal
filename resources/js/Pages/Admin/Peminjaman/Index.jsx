@@ -5,6 +5,8 @@ import StatusBadge from '@/Components/Admin/StatusBadge';
 import Modal from '@/Components/Admin/Modal';
 import Pagination from '@/Components/Admin/Pagination';
 import { useDebounce } from '@/Utils/debounce';
+import { toastSuccess, toastError, TOAST_MESSAGES } from '@/Utils/toast';
+import ConfirmAction from '@/Components/Admin/ConfirmAction';
 
 const FILTER_LABELS = [
     { label: 'Semua', value: '' },
@@ -14,6 +16,7 @@ const FILTER_LABELS = [
 ];
 
 function LoanForm({ show, onClose, items_available }) {
+    const [showAlert, setShowAlert] = useState(false);
     const form = useForm({
         item_id: '',
         borrower_name: '',
@@ -25,80 +28,105 @@ function LoanForm({ show, onClose, items_available }) {
     const submit = (e) => {
         e.preventDefault();
         form.post(route('admin.peminjaman.store'), {
-            onSuccess: () => { form.reset(); onClose(); },
+            onSuccess: () => {
+                const m = TOAST_MESSAGES.loanAdded;
+                toastSuccess(m.title, m.description);
+                form.reset(); onClose();
+            },
+            onError: () => toastError(TOAST_MESSAGES.failed.title, TOAST_MESSAGES.failed.description),
         });
     };
 
+    const handleClose = () => {
+        if (form.isDirty) {
+            setShowAlert(true);
+        } else {
+            onClose();
+        }
+    };
+
     return (
-        <Modal show={show} title="Catat Peminjaman Baru" onClose={onClose} size="lg">
-            <form onSubmit={submit} className="space-y-4">
-                <div>
-                    <label className="block text-label-md text-muted mb-1">Barang *</label>
-                    <select
-                        className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
-                        value={form.data.item_id}
-                        onChange={e => form.setData('item_id', e.target.value)}
-                        required
-                    >
-                        <option value="">Pilih barang tersedia...</option>
-                        {items_available?.map(item => (
-                            <option key={item.id} value={item.id}>{item.item_code} — {item.name}</option>
-                        ))}
-                    </select>
-                    {form.errors.item_id && <p className="text-label-md text-status-err mt-1">{form.errors.item_id}</p>}
-                </div>
-                <div className="grid grid-cols-2 gap-3">
+        <>
+            <Modal show={show} title="Catat Peminjaman Baru" onClose={handleClose} size="lg">
+                <form onSubmit={submit} className="space-y-4">
                     <div>
-                        <label className="block text-label-md text-muted mb-1">Nama Peminjam *</label>
-                        <input
+                        <label className="block text-label-md text-muted mb-1">Barang *</label>
+                        <select
                             className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
-                            value={form.data.borrower_name}
-                            onChange={e => form.setData('borrower_name', e.target.value)}
+                            value={form.data.item_id}
+                            onChange={e => form.setData('item_id', e.target.value)}
                             required
-                        />
-                        {form.errors.borrower_name && <p className="text-label-md text-status-err mt-1">{form.errors.borrower_name}</p>}
+                        >
+                            <option value="">Pilih barang tersedia...</option>
+                            {items_available?.map(item => (
+                                <option key={item.id} value={item.id}>{item.item_code} — {item.name}</option>
+                            ))}
+                        </select>
+                        {form.errors.item_id && <p className="text-label-md text-status-err mt-1">{form.errors.item_id}</p>}
                     </div>
-                    <div>
-                        <label className="block text-label-md text-muted mb-1">No. WhatsApp *</label>
-                        <input
-                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
-                            type="tel"
-                            value={form.data.borrower_phone}
-                            onChange={e => form.setData('borrower_phone', e.target.value)}
-                            placeholder="0812xxxx"
-                            required
-                        />
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-label-md text-muted mb-1">Nama Peminjam *</label>
+                            <input
+                                className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
+                                value={form.data.borrower_name}
+                                onChange={e => form.setData('borrower_name', e.target.value)}
+                                required
+                            />
+                            {form.errors.borrower_name && <p className="text-label-md text-status-err mt-1">{form.errors.borrower_name}</p>}
+                        </div>
+                        <div>
+                            <label className="block text-label-md text-muted mb-1">No. WhatsApp *</label>
+                            <input
+                                className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
+                                type="tel"
+                                value={form.data.borrower_phone}
+                                onChange={e => form.setData('borrower_phone', e.target.value)}
+                                placeholder="0812xxxx"
+                                required
+                            />
+                        </div>
                     </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                    <div>
-                        <label className="block text-label-md text-muted mb-1">Tanggal Pinjam *</label>
-                        <input type="date"
-                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
-                            value={form.data.loan_date}
-                            onChange={e => form.setData('loan_date', e.target.value)}
-                            required
-                        />
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-label-md text-muted mb-1">Tanggal Pinjam *</label>
+                            <input type="date"
+                                className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
+                                value={form.data.loan_date}
+                                onChange={e => form.setData('loan_date', e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-label-md text-muted mb-1">Tanggal Kembali</label>
+                            <input type="date"
+                                className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
+                                value={form.data.return_date}
+                                onChange={e => form.setData('return_date', e.target.value)}
+                            />
+                        </div>
                     </div>
-                    <div>
-                        <label className="block text-label-md text-muted mb-1">Tanggal Kembali</label>
-                        <input type="date"
-                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
-                            value={form.data.return_date}
-                            onChange={e => form.setData('return_date', e.target.value)}
-                        />
+                    <div className="flex justify-end gap-2 pt-2">
+                        <button type="button" onClick={handleClose} className="px-4 py-2 rounded-lg text-body-sm text-muted border border-border-base hover:bg-bg transition-colors">Batal</button>
+                        <button type="submit" disabled={form.processing}
+                            className="px-5 py-2 rounded-lg text-body-sm bg-primary text-on-primary font-semibold hover:bg-primary-dark disabled:opacity-60 transition-colors"
+                        >
+                            {form.processing ? 'Menyimpan...' : 'Catat Peminjaman'}
+                        </button>
                     </div>
-                </div>
-                <div className="flex justify-end gap-2 pt-2">
-                    <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-body-sm text-muted border border-border-base hover:bg-bg transition-colors">Batal</button>
-                    <button type="submit" disabled={form.processing}
-                        className="px-5 py-2 rounded-lg text-body-sm bg-primary text-on-primary font-semibold hover:bg-primary-dark disabled:opacity-60 transition-colors"
-                    >
-                        {form.processing ? 'Menyimpan...' : 'Catat Peminjaman'}
-                    </button>
-                </div>
-            </form>
-        </Modal>
+                </form>
+            </Modal>
+            <ConfirmAction
+                open={showAlert}
+                onOpenChange={setShowAlert}
+                onConfirm={onClose}
+                title="Batal Peminjaman?"
+                description="Ada perubahan yang belum disimpan. Yakin ingin menutup form peminjaman?"
+                confirmText="Tutup & Buang Perubahan"
+                cancelText="Kembali"
+                variant="destructive"
+            />
+        </>
     );
 }
 
@@ -107,8 +135,13 @@ export default function PeminjamanIndex({ loans, filters, items_available }) {
     const [searchVal, setSearchVal] = useState(filters?.search ?? '');
 
     const handleReturn = (loan) => {
-        if (!confirm(`Konfirmasi pengembalian barang "${loan.item?.name}" oleh ${loan.borrower_name}?`)) return;
-        router.post(route('admin.peminjaman.return', loan.id));
+        router.post(route('admin.peminjaman.return', loan.id), {}, {
+            onSuccess: () => {
+                const m = TOAST_MESSAGES.loanReturned;
+                toastSuccess(m.title, m.description);
+            },
+            onError: () => toastError(TOAST_MESSAGES.failed.title, TOAST_MESSAGES.failed.description),
+        });
     };
 
     const applyFilter = (value) => {
@@ -224,12 +257,17 @@ export default function PeminjamanIndex({ loans, filters, items_available }) {
                                         </td>
                                         <td className="py-3 px-4 text-right">
                                             {loan.status === 'Active' && (
-                                                <button
-                                                    onClick={() => handleReturn(loan)}
-                                                    className="text-label-md text-primary border border-primary px-3 py-1.5 rounded-lg hover:bg-primary hover:text-on-primary transition-colors font-semibold"
+                                                <ConfirmAction
+                                                    onConfirm={() => handleReturn(loan)}
+                                                    title="Konfirmasi Pengembalian"
+                                                    description={`Selesaikan peminjaman barang "${loan.item?.name}" oleh ${loan.borrower_name}?`}
+                                                    confirmText="Selesaikan"
+                                                    variant="default"
                                                 >
-                                                    Selesaikan
-                                                </button>
+                                                    <button className="text-label-md text-primary border border-primary px-3 py-1.5 rounded-lg hover:bg-primary hover:text-on-primary transition-colors font-semibold">
+                                                        Selesaikan
+                                                    </button>
+                                                </ConfirmAction>
                                             )}
                                             {loan.status === 'Returned' && (
                                                 <span className="text-label-md text-status-ok font-medium">Dikembalikan</span>

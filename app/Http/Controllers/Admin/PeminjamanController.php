@@ -54,7 +54,10 @@ class PeminjamanController extends Controller
             $item = Item::findOrFail($data['item_id']);
 
             if ($item->status !== 'Tersedia') {
-                abort(422, "Barang tidak tersedia (Status: {$item->status}).");
+                $msg = $item->status === 'Dipinjam'
+                    ? 'Barang sedang dipinjam oleh orang lain.'
+                    : 'Barang tidak dapat dipinjam karena statusnya Perbaikan.';
+                throw \Illuminate\Validation\ValidationException::withMessages(['item_id' => $msg]);
             }
 
             $loan = LoanRecord::create(array_merge($data, ['status' => 'Active']));
