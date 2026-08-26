@@ -4,6 +4,8 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import StatusBadge from '@/Components/Admin/StatusBadge';
 import Pagination from '@/Components/Admin/Pagination';
 import { useDebounce } from '@/Utils/debounce';
+import { toastSuccess, toastError, TOAST_MESSAGES } from '@/Utils/toast';
+import ConfirmAction from '@/Components/Admin/ConfirmAction';
 
 const FILTER_LABELS = [
     { label: 'Semua', value: '' },
@@ -25,8 +27,13 @@ export default function ArtikelIndex({ articles, filters }) {
     };
 
     const handleDelete = (article) => {
-        if (!confirm(`Hapus artikel "${article.title}"?`)) return;
-        router.delete(route('admin.artikel.destroy', article.id));
+        router.delete(route('admin.artikel.destroy', article.id), {
+            onSuccess: () => {
+                const m = TOAST_MESSAGES.articleDeleted;
+                toastSuccess(m.title, m.description);
+            },
+            onError: () => toastError(TOAST_MESSAGES.failed.title, TOAST_MESSAGES.failed.description),
+        });
     };
 
     const applyFilter = (value) => {
@@ -115,12 +122,15 @@ export default function ArtikelIndex({ articles, filters }) {
                                             >
                                                 <span className="material-symbols-outlined text-[18px]">edit</span>
                                             </Link>
-                                            <button
-                                                onClick={() => handleDelete(article)}
-                                                className="p-1.5 text-subtle hover:text-status-err hover:bg-status-err-bg rounded-lg transition-colors"
+                                            <ConfirmAction
+                                                onConfirm={() => handleDelete(article)}
+                                                title="Hapus Artikel"
+                                                description={`Hapus artikel "${article.title}"? Tindakan ini tidak bisa dibatalkan.`}
                                             >
-                                                <span className="material-symbols-outlined text-[18px]">delete</span>
-                                            </button>
+                                                <button className="p-1.5 text-subtle hover:text-status-err hover:bg-status-err-bg rounded-lg transition-colors">
+                                                    <span className="material-symbols-outlined text-[18px]">delete</span>
+                                                </button>
+                                            </ConfirmAction>
                                         </div>
                                     </td>
                                 </tr>
