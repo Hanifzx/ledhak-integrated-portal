@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
+import { toastSuccess, toastError, TOAST_MESSAGES } from '@/Utils/toast';
 
 function Section({ title, icon, children }) {
     return (
@@ -26,6 +27,32 @@ function FormField({ label, error, children }) {
     );
 }
 
+function PasswordInput({ value, onChange, autoComplete, required }) {
+    const [show, setShow] = useState(false);
+    return (
+        <div className="relative w-full">
+            <input
+                className={`${inputClass} pr-10`}
+                type={show ? "text" : "password"}
+                value={value}
+                onChange={onChange}
+                autoComplete={autoComplete}
+                required={required}
+            />
+            <button
+                type="button"
+                onClick={() => setShow(!show)}
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-subtle hover:text-ink focus:outline-none"
+                tabIndex="-1"
+            >
+                <span className="material-symbols-outlined text-[20px]">
+                    {show ? 'visibility_off' : 'visibility'}
+                </span>
+            </button>
+        </div>
+    );
+}
+
 const inputClass = "w-full px-3 py-2.5 rounded-lg border border-border-base bg-bg text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-subtle";
 
 export default function PengaturanIndex({ user, system_info, google_sheets_url }) {
@@ -37,13 +64,24 @@ export default function PengaturanIndex({ user, system_info, google_sheets_url }
 
     const submitProfile = (e) => {
         e.preventDefault();
-        profileForm.patch(route('admin.pengaturan.profile'));
+        profileForm.patch(route('admin.pengaturan.profile'), {
+            onSuccess: () => {
+                const m = TOAST_MESSAGES.profileUpdated;
+                toastSuccess(m.title, m.description);
+            },
+            onError: () => toastError(TOAST_MESSAGES.failed.title, TOAST_MESSAGES.failed.description),
+        });
     };
 
     const submitPassword = (e) => {
         e.preventDefault();
         passwordForm.post(route('admin.pengaturan.password'), {
-            onSuccess: () => passwordForm.reset(),
+            onSuccess: () => {
+                const m = TOAST_MESSAGES.passwordUpdated;
+                toastSuccess(m.title, m.description);
+                passwordForm.reset();
+            },
+            onError: () => toastError(TOAST_MESSAGES.failed.title, TOAST_MESSAGES.failed.description),
         });
     };
 
@@ -130,7 +168,7 @@ export default function PengaturanIndex({ user, system_info, google_sheets_url }
                     <Section title="Ganti Password" icon="lock">
                         <form onSubmit={submitPassword} className="space-y-4 max-w-md">
                             <FormField label="Password Saat Ini *" error={passwordForm.errors.current_password}>
-                                <input className={inputClass} type="password"
+                                <PasswordInput
                                     value={passwordForm.data.current_password}
                                     onChange={e => passwordForm.setData('current_password', e.target.value)}
                                     autoComplete="current-password"
@@ -138,7 +176,7 @@ export default function PengaturanIndex({ user, system_info, google_sheets_url }
                                 />
                             </FormField>
                             <FormField label="Password Baru *" error={passwordForm.errors.password}>
-                                <input className={inputClass} type="password"
+                                <PasswordInput
                                     value={passwordForm.data.password}
                                     onChange={e => passwordForm.setData('password', e.target.value)}
                                     autoComplete="new-password"
@@ -147,7 +185,7 @@ export default function PengaturanIndex({ user, system_info, google_sheets_url }
                                 <p className="text-label-caps text-subtle mt-1">Minimal 8 karakter.</p>
                             </FormField>
                             <FormField label="Konfirmasi Password Baru *" error={passwordForm.errors.password_confirmation}>
-                                <input className={inputClass} type="password"
+                                <PasswordInput
                                     value={passwordForm.data.password_confirmation}
                                     onChange={e => passwordForm.setData('password_confirmation', e.target.value)}
                                     autoComplete="new-password"

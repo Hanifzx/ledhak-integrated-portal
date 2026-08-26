@@ -3,6 +3,7 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import StatusBadge from '@/Components/Admin/StatusBadge';
 import Modal from '@/Components/Admin/Modal';
+import { toastSuccess, toastError, TOAST_MESSAGES } from '@/Utils/toast';
 
 const DEFAULT_PHOTO = '/images/assets/item_default.webp';
 const STATUS_OPTIONS = ['Tersedia', 'Dipinjam', 'Perbaikan'];
@@ -70,9 +71,12 @@ function QuickAddItemModal({ onClose }) {
         form.post(route('admin.inventaris.store'), {
             forceFormData: true,
             onSuccess: () => {
+                const m = TOAST_MESSAGES.itemAdded;
+                toastSuccess(m.title, m.description);
                 onClose();
                 router.visit(route('admin.inventaris.index'));
             },
+            onError: () => toastError(TOAST_MESSAGES.failed.title, TOAST_MESSAGES.failed.description),
         });
     };
 
