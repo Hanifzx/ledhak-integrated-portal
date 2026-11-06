@@ -44,20 +44,18 @@ class InventarisController extends Controller
     {
         $data = $request->validate([
             'name'        => 'required|string|max:255',
-            'item_code'   => 'nullable|string|unique:items,item_code|max:50',
             'category'    => 'required|string|max:100',
             'status'      => 'in:Tersedia,Perbaikan,Hilang',  // Dipinjam diatur otomatis lewat Peminjaman
             'description' => 'nullable|string',
             'photo'       => 'nullable|image|mimes:jpeg,jpg,png,webp|max:1024',
         ]);
 
-        if (empty($data['item_code'])) {
-            $count = Item::count() + 1;
-            $data['item_code'] = 'INV-LDK-' . str_pad($count, 3, '0', STR_PAD_LEFT);
-        }
+        $count = (Item::withTrashed()->max('id') ?? 0) + 1;
+        $data['item_code'] = 'INV-LDK-' . str_pad($count, 3, '0', STR_PAD_LEFT);
 
+        $hash = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode('LEDHAK|' . $data['item_code']));
         $data['qr_code_url'] = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data='
-            . urlencode(url('/api/public/inventory/' . $data['item_code']));
+            . urlencode(route('public.item.show', ['hash' => $hash]));
         $data['status'] ??= 'Tersedia';
 
         if ($request->hasFile('photo')) {
@@ -81,7 +79,6 @@ class InventarisController extends Controller
     {
         $data = $request->validate([
             'name'        => 'required|string|max:255',
-            'item_code'   => "required|string|unique:items,item_code,{$item->id}|max:50",
             'category'    => 'required|string|max:100',
             'status'      => 'in:Tersedia,Perbaikan,Hilang',  // Dipinjam diatur otomatis lewat Peminjaman
             'description' => 'nullable|string',
@@ -143,11 +140,34 @@ class InventarisController extends Controller
 
     public function destroy(Item $item)
     {
-        if ($item->photo_path) {
-            Storage::disk('public')->delete($item->photo_path);
-        }
+        InventoryLog::create([
+            'item_id' => $item->id,
+            'user_id' => Auth::id(),
+            'action'  => 'Barang dihapus',
+            'notes'   => "Menghapus barang dari sistem: {$item->name}",
+        ]);
+
         $item->delete();
         return redirect()->route('admin.inventaris.index');
+    }
+
+    public function downloadQr(Item $item)
+    {
+        if (!$item->qr_code_url) {
+            abort(404, 'QR Code belum di-generate.');
+        }
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::get($item->qr_code_url);
+            if ($response->successful()) {
+                return response($response->body())
+                    ->header('Content-Type', 'image/png')
+                    ->header('Content-Disposition', 'attachment; filename="QR_' . $item->item_code . '.png"');
+            }
+            throw new \Exception('Failed to download from API');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal mengunduh QR Code.');
+        }
     }
 
     /**
