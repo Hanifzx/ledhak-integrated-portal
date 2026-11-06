@@ -150,19 +150,23 @@ function QuickAddItemModal({ onClose }) {
 
 function MetricCard({ icon, label, value, sub, subClass = 'text-muted' }) {
     return (
-        <div className="bg-surface rounded-xl border border-border-base p-5 shadow-card group relative overflow-hidden">
-            <div className="absolute -right-4 -top-4 opacity-[0.06] group-hover:scale-110 transition-transform duration-500">
+        <div className="bg-surface rounded-xl border border-border-base shadow-card group relative overflow-hidden
+            p-3 sm:p-5">
+            {/* Decorative bg icon — hidden on very small screens to save space */}
+            <div className="absolute -right-3 -top-3 opacity-[0.06] group-hover:scale-110 transition-transform duration-500 hidden sm:block">
                 <span className="material-symbols-outlined text-[100px] text-ink">{icon}</span>
             </div>
-            <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-3">
-                    <div className="w-9 h-9 rounded-lg bg-primary-soft flex items-center justify-center">
-                        <span className="material-symbols-outlined text-primary text-[18px]">{icon}</span>
-                    </div>
-                    <p className="text-body-sm text-muted font-medium">{label}</p>
+            <div className="relative z-10 flex flex-col items-center text-center sm:items-start sm:text-left">
+                {/* Icon badge */}
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-primary-soft flex items-center justify-center mb-2 sm:mb-3">
+                    <span className="material-symbols-outlined text-primary text-[16px] sm:text-[18px]">{icon}</span>
                 </div>
-                <p className="text-[36px] font-bold text-ink leading-none mb-1">{value}</p>
-                <p className={`text-label-md font-medium ${subClass}`}>{sub}</p>
+                {/* Label */}
+                <p className="text-[10px] sm:text-body-sm text-muted font-medium leading-tight mb-1 sm:mb-3 line-clamp-2">{label}</p>
+                {/* Value */}
+                <p className="text-2xl sm:text-[36px] font-bold text-ink leading-none mb-0.5 sm:mb-1">{value}</p>
+                {/* Sub */}
+                <p className={`text-[10px] sm:text-label-md font-medium leading-tight ${subClass}`}>{sub}</p>
             </div>
         </div>
     );
@@ -174,15 +178,15 @@ export default function Dashboard({ metrics, overdue_loans, recent_logs, draft_a
         <AdminLayout title="Beranda">
             <Head title="Dashboard — LeDHaK" />
 
-            <div className="max-w-6xl mx-auto space-y-6">
+            <div className="max-w-6xl mx-auto space-y-5">
                 {/* Welcome */}
                 <div>
-                    <h2 className="text-h1 text-ink">Selamat Datang, Admin!</h2>
-                    <p className="text-body-md text-muted mt-1">Ringkasan operasional inventaris UKM LeDHaK UNHAS hari ini.</p>
+                    <h2 className="text-h2 sm:text-h1 text-ink">Selamat Datang, Admin!</h2>
+                    <p className="text-body-sm sm:text-body-md text-muted mt-1">Ringkasan operasional inventaris UKM LeDHaK UNHAS hari ini.</p>
                 </div>
 
-                {/* Metric Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Metric Cards — 3-col on all breakpoints, compact on mobile */}
+                <div className="grid grid-cols-3 gap-2 sm:gap-4">
                     <MetricCard
                         icon="inventory_2"
                         label="Total Inventaris"
@@ -205,7 +209,7 @@ export default function Dashboard({ metrics, overdue_loans, recent_logs, draft_a
                 </div>
 
                 {/* Urgency + Quick Actions */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
                     {/* Overdue */}
                     <div className="lg:col-span-2 bg-surface rounded-xl border border-border-base p-5 shadow-card">
                         <div className="flex items-center justify-between mb-4">
@@ -220,12 +224,12 @@ export default function Dashboard({ metrics, overdue_loans, recent_logs, draft_a
                         {overdue_loans?.length > 0 ? (
                             <div className="space-y-2">
                                 {overdue_loans.map((loan) => (
-                                    <div key={loan.id} className="flex items-center justify-between p-3 bg-bg rounded-lg border-l-4 border-primary">
-                                        <div>
-                                            <p className="text-body-sm font-semibold text-ink">{loan.item?.name}</p>
-                                            <p className="text-label-md text-muted">Peminjam: {loan.borrower_name}</p>
+                                    <div key={loan.id} className="flex items-center justify-between gap-2 p-3 bg-bg rounded-lg border-l-4 border-primary">
+                                        <div className="min-w-0">
+                                            <p className="text-body-sm font-semibold text-ink truncate">{loan.item?.name}</p>
+                                            <p className="text-label-md text-muted truncate">Peminjam: {loan.borrower_name}</p>
                                         </div>
-                                        <span className="text-label-caps font-bold text-status-err bg-status-err-bg px-2 py-0.5 rounded-full">
+                                        <span className="text-label-caps font-bold text-status-err bg-status-err-bg px-2 py-0.5 rounded-full flex-shrink-0">
                                             Terlambat
                                         </span>
                                     </div>
@@ -262,7 +266,7 @@ export default function Dashboard({ metrics, overdue_loans, recent_logs, draft_a
                 </div>
 
                 {/* Log + Drafts */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
                     {/* Activity Log */}
                     <div className="bg-surface rounded-xl border border-border-base p-5 shadow-card">
                         <h3 className="text-h3 text-ink flex items-center gap-2 mb-4">
