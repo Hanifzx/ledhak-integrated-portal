@@ -81,6 +81,10 @@ class PeminjamanController extends Controller
 
     public function returnLoan(LoanRecord $loan)
     {
+        if ($loan->status === 'Returned') {
+            return redirect()->back()->with('error', 'Barang sudah dikembalikan sebelumnya.');
+        }
+
         DB::transaction(function () use ($loan) {
             $loan->update(['status' => 'Returned', 'return_date' => Carbon::today()]);
             $loan->item->update(['status' => 'Tersedia']);
