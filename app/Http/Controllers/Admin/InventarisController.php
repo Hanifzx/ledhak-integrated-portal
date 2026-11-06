@@ -30,7 +30,7 @@ class InventarisController extends Controller
         $items = $query->latest()->paginate(12)->withQueryString();
         $items->getCollection()->transform(fn($item) => array_merge($item->toArray(), [
             'photo_url' => $item->photo_path
-                ? Storage::disk('public')->url($item->photo_path)
+                ? asset('storage/' . $item->photo_path)
                 : null,
         ]));
 
@@ -42,68 +42,84 @@ class InventarisController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'name'        => 'required|string|max:255',
-            'category'    => 'required|string|max:100',
-            'status'      => 'in:Tersedia,Perbaikan,Hilang',  // Dipinjam diatur otomatis lewat Peminjaman
-            'description' => 'nullable|string',
-            'photo'       => 'nullable|image|mimes:jpeg,jpg,png,webp|max:1024',
-        ]);
+        try {
+            $data = $request->validate([
+                'name'        => 'required|string|max:255',
+                'category'    => 'required|string|max:100',
+                'status'      => 'in:Tersedia,Perbaikan,Hilang',  // Dipinjam diatur otomatis lewat Peminjaman
+                'description' => 'nullable|string',
+                'photo'       => 'nullable|image|mimes:jpeg,jpg,png,webp|max:1024',
+            ]);
 
-        $count = (Item::withTrashed()->max('id') ?? 0) + 1;
-        $data['item_code'] = 'INV-LDK-' . str_pad($count, 3, '0', STR_PAD_LEFT);
+            $count = (Item::withTrashed()->max('id') ?? 0) + 1;
+            $data['item_code'] = 'INV-LDK-' . str_pad($count, 3, '0', STR_PAD_LEFT);
 
-        $hash = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode('LEDHAK|' . $data['item_code']));
-        $data['qr_code_url'] = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data='
-            . urlencode(route('public.item.show', ['hash' => $hash]));
-        $data['status'] ??= 'Tersedia';
+            $hash = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode('LEDHAK|' . $data['item_code']));
+            $data['qr_code_url'] = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data='
+                . urlencode(route('public.item.show', ['hash' => $hash]));
+            $data['status'] ??= 'Tersedia';
 
-        if ($request->hasFile('photo')) {
-            $data['photo_path'] = $this->cropAndStoreSquare($request->file('photo'));
+            if ($request->hasFile('photo')) {
+                $data['photo_path'] = $this->cropAndStoreSquare($request->file('photo'));
+            }
+            unset($data['photo']);
+
+            $item = Item::create($data);
+
+            InventoryLog::create([
+                'item_id' => $item->id,
+                'user_id' => Auth::id(),
+                'action'  => 'Barang ditambahkan',
+                'notes'   => "Barang baru: {$item->name}",
+            ]);
+
+            return redirect()->route('admin.inventaris.index')->with('success', 'Barang berhasil ditambahkan');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Inventaris store failed: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menambahkan barang: ' . $e->getMessage());
         }
-        unset($data['photo']);
-
-        $item = Item::create($data);
-
-        InventoryLog::create([
-            'item_id' => $item->id,
-            'user_id' => Auth::id(),
-            'action'  => 'Barang ditambahkan',
-            'notes'   => "Barang baru: {$item->name}",
-        ]);
-
-        return redirect()->route('admin.inventaris.index');
     }
 
     public function update(Request $request, Item $item)
     {
-        $data = $request->validate([
-            'name'        => 'required|string|max:255',
-            'category'    => 'required|string|max:100',
-            'status'      => 'in:Tersedia,Perbaikan,Hilang',  // Dipinjam diatur otomatis lewat Peminjaman
-            'description' => 'nullable|string',
-            'photo'       => 'nullable|image|mimes:jpeg,jpg,png,webp|max:1024',
-        ]);
+        try {
+            $data = $request->validate([
+                'name'        => 'required|string|max:255',
+                'category'    => 'required|string|max:100',
+                'status'      => 'in:Tersedia,Perbaikan,Hilang',  // Dipinjam diatur otomatis lewat Peminjaman
+                'description' => 'nullable|string',
+                'photo'       => 'nullable|image|mimes:jpeg,jpg,png,webp|max:1024',
+            ]);
 
-        if ($request->hasFile('photo')) {
-            // delete old photo
-            if ($item->photo_path) {
-                Storage::disk('public')->delete($item->photo_path);
+            if ($request->hasFile('photo')) {
+                // delete old photo
+                if ($item->photo_path) {
+                    try {
+                        Storage::disk('public')->delete($item->photo_path);
+                    } catch (\Throwable $e) {}
+                }
+                $data['photo_path'] = $this->cropAndStoreSquare($request->file('photo'));
             }
-            $data['photo_path'] = $this->cropAndStoreSquare($request->file('photo'));
+            unset($data['photo']);
+
+            $item->update($data);
+
+            InventoryLog::create([
+                'item_id' => $item->id,
+                'user_id' => Auth::id(),
+                'action'  => 'Data barang diperbarui',
+                'notes'   => "Update: {$item->name}",
+            ]);
+
+            return redirect()->route('admin.inventaris.index')->with('success', 'Data barang berhasil diperbarui');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Inventaris update failed: ' . $e->getMessage());
+            return back()->with('error', 'Gagal memperbarui barang: ' . $e->getMessage());
         }
-        unset($data['photo']);
-
-        $item->update($data);
-
-        InventoryLog::create([
-            'item_id' => $item->id,
-            'user_id' => Auth::id(),
-            'action'  => 'Data barang diperbarui',
-            'notes'   => "Update: {$item->name}",
-        ]);
-
-        return redirect()->route('admin.inventaris.index');
     }
 
     public function updateStatus(Request $request, Item $item)
@@ -173,38 +189,53 @@ class InventarisController extends Controller
     /**
      * Crop & save an uploaded image as a 500x500 square JPEG.
      */
-    private function cropAndStoreSquare(\Illuminate\Http\UploadedFile $file): string
+    private function cropAndStoreSquare(\Illuminate\Http\UploadedFile $file): ?string
     {
-        $src = $file->getRealPath();
-        $mime = $file->getMimeType();
-
-        $image = match (true) {
-            str_contains($mime, 'png')  => imagecreatefrompng($src),
-            str_contains($mime, 'webp') => imagecreatefromwebp($src),
-            default                     => imagecreatefromjpeg($src),
-        };
-
-        $w = imagesx($image);
-        $h = imagesy($image);
-        $size = min($w, $h);
-        $x = (int)(($w - $size) / 2);
-        $y = (int)(($h - $size) / 2);
-
-        $square = imagecreatetruecolor(500, 500);
-        imagecopyresampled($square, $image, 0, 0, $x, $y, 500, 500, $size, $size);
-        imagedestroy($image);
-
-        $filename = 'items/' . uniqid('item_', true) . '.jpg';
         try {
-            Storage::disk('public')->makeDirectory('items');
-            $fullPath = storage_path('app/public/' . $filename);
-            @imagejpeg($square, $fullPath, 85);
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning('Could not write image to local storage: ' . $e->getMessage());
-        } finally {
-            imagedestroy($square);
-        }
+            // Guard: If GD extension is not loaded in serverless, fallback gracefully
+            if (!extension_loaded('gd') || !function_exists('imagecreatetruecolor')) {
+                \Illuminate\Support\Facades\Log::warning('GD extension not loaded. Skipping image manipulation.');
+                return null;
+            }
 
-        return $filename;
+            $src = $file->getRealPath();
+            $mime = $file->getMimeType();
+
+            $image = match (true) {
+                str_contains($mime, 'png')  => function_exists('imagecreatefrompng') ? @imagecreatefrompng($src) : false,
+                str_contains($mime, 'webp') => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($src) : false,
+                default                     => function_exists('imagecreatefromjpeg') ? @imagecreatefromjpeg($src) : false,
+            };
+
+            if (!$image) {
+                return null;
+            }
+
+            $w = imagesx($image);
+            $h = imagesy($image);
+            $size = min($w, $h);
+            $x = (int)(($w - $size) / 2);
+            $y = (int)(($h - $size) / 2);
+
+            $square = imagecreatetruecolor(500, 500);
+            imagecopyresampled($square, $image, 0, 0, $x, $y, 500, 500, $size, $size);
+
+            $filename = 'items/' . uniqid('item_', true) . '.jpg';
+            try {
+                Storage::disk('public')->makeDirectory('items');
+                $fullPath = storage_path('app/public/' . $filename);
+                @imagejpeg($square, $fullPath, 85);
+            } catch (\Throwable $storageError) {
+                \Illuminate\Support\Facades\Log::warning('Storage write failed on serverless read-only disk: ' . $storageError->getMessage());
+            } finally {
+                imagedestroy($square);
+                imagedestroy($image);
+            }
+
+            return $filename;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Image crop failed: ' . $e->getMessage());
+            return null;
+        }
     }
 }
