@@ -195,10 +195,15 @@ class InventarisController extends Controller
         imagedestroy($image);
 
         $filename = 'items/' . uniqid('item_', true) . '.jpg';
-        Storage::disk('public')->makeDirectory('items');
-        $fullPath = storage_path('app/public/' . $filename);
-        imagejpeg($square, $fullPath, 85);
-        imagedestroy($square);
+        try {
+            Storage::disk('public')->makeDirectory('items');
+            $fullPath = storage_path('app/public/' . $filename);
+            @imagejpeg($square, $fullPath, 85);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Could not write image to local storage: ' . $e->getMessage());
+        } finally {
+            imagedestroy($square);
+        }
 
         return $filename;
     }

@@ -21,5 +21,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Vite::prefetch(concurrency: 3);
+
+        // Auto-create view cache directory in serverless environment (/tmp)
+        $compiledPath = config('view.compiled');
+        if ($compiledPath && !is_dir($compiledPath)) {
+            @mkdir($compiledPath, 0755, true);
+        }
     }
 }
