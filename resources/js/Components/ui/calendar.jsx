@@ -165,11 +165,6 @@ function CalendarDayButton({
       data-range-start={modifiers.range_start}
       data-range-end={modifiers.range_end}
       data-range-middle={modifiers.range_middle}
-      style={
-        modifiers.selected && !modifiers.range_start && !modifiers.range_end && !modifiers.range_middle
-          ? { backgroundColor: 'var(--color-surface-mid)', border: '2px solid var(--color-border-strong)', color: 'var(--color-text)', fontWeight: 'bold' }
-          : {}
-      }
       className={cn(
         "data-[selected-single=true]:bg-surface-mid data-[selected-single=true]:border-2 data-[selected-single=true]:border-border-strong data-[selected-single=true]:text-ink data-[selected-single=true]:font-bold data-[range-middle=true]:bg-bg data-[range-middle=true]:text-ink data-[range-start=true]:bg-border-base data-[range-start=true]:text-ink data-[range-end=true]:bg-border-base data-[range-end=true]:text-ink group-data-[focused=true]/day:border-primary group-data-[focused=true]/day:ring-primary/50 flex aspect-square h-auto w-full min-w-[--cell-size] flex-col gap-1 font-normal leading-none data-[range-end=true]:rounded-md data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-md group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[2px] [&>span]:text-xs [&>span]:opacity-70 aria-selected:bg-surface-mid aria-selected:border-2 aria-selected:border-border-strong aria-selected:text-ink aria-selected:font-bold",
         defaultClassNames.day,
