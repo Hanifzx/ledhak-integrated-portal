@@ -1,12 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import StatusBadge from '@/Components/Admin/StatusBadge';
 import Modal from '@/Components/Admin/Modal';
 import Pagination from '@/Components/Admin/Pagination';
-import { useDebounce } from '@/Utils/debounce';
-import { toastSuccess, toastError, TOAST_MESSAGES } from '@/Utils/toast';
 import ConfirmAction from '@/Components/Admin/ConfirmAction';
+import { PageHeader, SearchInput, FilterBar } from '@/Components/Admin/AdminUI';
+import { Spinner } from "@/components/ui/spinner";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useDebounce } from '@/Utils/debounce';
+import { toastMsg, toastFailed } from '@/Utils/toast';
+import { format, parseISO } from 'date-fns';
+import { id } from 'date-fns/locale';
 
 const FILTER_LABELS = [
     { label: 'Semua', value: '' },
@@ -15,7 +22,34 @@ const FILTER_LABELS = [
     { label: 'Dikembalikan', value: 'Returned' },
 ];
 
-function LoanForm({ show, onClose, items_available }) {
+function DatePicker({ value, onChange, placeholder = "Pilih tanggal" }) {
+    const date = value ? parseISO(value) : undefined;
+    return (
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button 
+                    variant="outline" 
+                    className={`w-full justify-between text-left font-normal border-border-base bg-surface text-body-md hover:bg-bg ${!date ? 'text-muted' : 'text-ink'}`}
+                >
+                    {date ? format(date, "PPP", { locale: id }) : <span>{placeholder}</span>}
+                    <span className="material-symbols-outlined text-subtle text-[18px]">calendar_today</span>
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 z-[100] bg-surface bg-white shadow-card-hover" align="start" style={{ backgroundColor: 'white' }}>
+                <Calendar
+                    className="bg-surface bg-white"
+                    style={{ backgroundColor: 'white' }}
+                    mode="single"
+                    selected={date}
+                    onSelect={(d) => onChange(d ? format(d, "yyyy-MM-dd") : '')}
+                    initialFocus
+                />
+            </PopoverContent>
+        </Popover>
+    );
+}
+
+function LoanForm({ show, onClose, items_available, initialItemId }) {
     const [showAlert, setShowAlert] = useState(false);
     const form = useForm({
         item_id: '',
@@ -25,15 +59,17 @@ function LoanForm({ show, onClose, items_available }) {
         return_date: '',
     });
 
+    useEffect(() => {
+        if (show && initialItemId && !form.data.item_id) {
+            form.setData('item_id', initialItemId);
+        }
+    }, [show, initialItemId]);
+
     const submit = (e) => {
         e.preventDefault();
         form.post(route('admin.peminjaman.store'), {
-            onSuccess: () => {
-                const m = TOAST_MESSAGES.loanAdded;
-                toastSuccess(m.title, m.description);
-                form.reset(); onClose();
-            },
-            onError: () => toastError(TOAST_MESSAGES.failed.title, TOAST_MESSAGES.failed.description),
+            onSuccess: () => { toastMsg('loanAdded'); form.reset(); onClose(); },
+            onError: toastFailed,
         });
     };
 
@@ -90,19 +126,18 @@ function LoanForm({ show, onClose, items_available }) {
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="block text-label-md text-muted mb-1">Tanggal Pinjam *</label>
-                            <input type="date"
-                                className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
+                            <DatePicker
                                 value={form.data.loan_date}
-                                onChange={e => form.setData('loan_date', e.target.value)}
-                                required
+                                onChange={val => form.setData('loan_date', val)}
+                                placeholder="Tanggal pinjam"
                             />
                         </div>
                         <div>
                             <label className="block text-label-md text-muted mb-1">Tanggal Kembali</label>
-                            <input type="date"
-                                className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
+                            <DatePicker
                                 value={form.data.return_date}
-                                onChange={e => form.setData('return_date', e.target.value)}
+                                onChange={val => form.setData('return_date', val)}
+                                placeholder="Opsi kembali"
                             />
                         </div>
                     </div>
@@ -131,16 +166,48 @@ function LoanForm({ show, onClose, items_available }) {
 }
 
 export default function PeminjamanIndex({ loans, filters, items_available }) {
+    const formatDate = (dateString) => {
+        if (!dateString) return '—';
+        try {
+            return format(parseISO(dateString), "d MMM yyyy", { locale: id });
+        } catch (e) {
+            return dateString;
+        }
+    };
+
     const [showLoanForm, setShowLoanForm] = useState(false);
     const [searchVal, setSearchVal] = useState(filters?.search ?? '');
+    
+    // Auto-open states
+    const [initialItemId, setInitialItemId] = useState('');
+    const [returnConfirmOpen, setReturnConfirmOpen] = useState(false);
+    const [loanToReturn, setLoanToReturn] = useState(null);
+    const [isReturning, setIsReturning] = useState(null);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const action = params.get('scan_action');
+        const itemId = params.get('item_id');
+        const loanId = params.get('loan_id');
+
+        if (action === 'loan' && itemId) {
+            setInitialItemId(itemId);
+            setShowLoanForm(true);
+        } else if (action === 'return' && loanId) {
+            const loan = loans?.data?.find(l => l.id === parseInt(loanId));
+            if (loan) {
+                setLoanToReturn(loan);
+                setReturnConfirmOpen(true);
+            }
+        }
+    }, [loans]);
 
     const handleReturn = (loan) => {
+        setIsReturning(loan.id);
         router.post(route('admin.peminjaman.return', loan.id), {}, {
-            onSuccess: () => {
-                const m = TOAST_MESSAGES.loanReturned;
-                toastSuccess(m.title, m.description);
-            },
-            onError: () => toastError(TOAST_MESSAGES.failed.title, TOAST_MESSAGES.failed.description),
+            onSuccess: () => { toastMsg('loanReturned'); if (returnConfirmOpen) setReturnConfirmOpen(false); },
+            onError: toastFailed,
+            onFinish: () => setIsReturning(null),
         });
     };
 
@@ -166,14 +233,14 @@ export default function PeminjamanIndex({ loans, filters, items_available }) {
 
             <div className="max-w-6xl mx-auto space-y-5">
                 {/* Header */}
-                <div className="flex items-end justify-between">
+                <div className="flex items-center justify-between gap-3">
                     <div>
-                        <h2 className="text-h1 text-ink">Riwayat Peminjaman</h2>
+                        <h2 className="text-h2 sm:text-h1 text-ink">Riwayat Peminjaman</h2>
                         <p className="text-body-sm text-muted mt-1">Pantau log sirkulasi barang inventaris.</p>
                     </div>
                     <button
                         onClick={() => setShowLoanForm(true)}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-lg text-body-sm font-semibold hover:bg-primary-dark transition-colors shadow-card"
+                        className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-lg text-body-sm font-semibold hover:bg-primary-dark transition-colors shadow-card"
                     >
                         <span className="material-symbols-outlined text-[18px]">add</span>
                         Catat Peminjaman
@@ -182,34 +249,81 @@ export default function PeminjamanIndex({ loans, filters, items_available }) {
 
                 {/* Search + Filter */}
                 <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="relative flex-1">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-subtle text-[18px]">search</span>
-                        <input
-                            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border-base bg-surface text-body-md text-ink placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-primary"
-                            placeholder="Cari barang atau peminjam..."
-                            value={searchVal}
-                            onChange={handleSearchChange}
-                        />
-                    </div>
-                    <div className="flex gap-2 flex-wrap">
-                        {FILTER_LABELS.map(f => (
-                            <button
-                                key={f.value}
-                                onClick={() => applyFilter(f.value)}
-                                className={`px-4 py-2 rounded-full text-label-md font-semibold transition-colors ${
-                                    activeFilter === f.value
-                                        ? 'bg-primary text-on-primary'
-                                        : 'bg-surface border border-border-base text-muted hover:bg-bg'
-                                }`}
-                            >
-                                {f.label}
-                            </button>
-                        ))}
-                    </div>
+                    <SearchInput
+                        value={searchVal}
+                        onChange={handleSearchChange}
+                        placeholder="Cari barang atau peminjam..."
+                    />
+                    <FilterBar
+                        items={FILTER_LABELS}
+                        activeValue={activeFilter}
+                        onSelect={applyFilter}
+                    />
                 </div>
 
-                {/* Table */}
-                <div className="bg-surface rounded-xl border border-border-base shadow-card overflow-x-auto">
+                {/* === MOBILE CARD LIST === */}
+                <div className="sm:hidden space-y-3">
+                    {loans?.data?.length > 0 ? loans.data.map((loan, idx) => {
+                        const isOverdue = loan.status === 'Active' && loan.return_date && new Date(loan.return_date) < new Date();
+                        const displayStatus = isOverdue ? 'Overdue' : loan.status;
+                        return (
+                            <div key={loan.id} className="bg-surface rounded-xl border border-border-base shadow-card overflow-hidden">
+                                {/* Header: nama item + badge — dipisah border bawah */}
+                                <div className="flex items-start justify-between gap-2 px-4 pt-4 pb-3 border-b border-border-base">
+                                    <div className="min-w-0">
+                                        <p className="text-body-sm font-semibold text-ink truncate">{loan.item?.name}</p>
+                                        <p className="text-label-caps text-subtle font-mono">{loan.item?.item_code}</p>
+                                    </div>
+                                    <StatusBadge status={displayStatus} />
+                                </div>
+                                {/* Body: info + action */}
+                                <div className="px-4 pt-3 pb-4">
+                                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-label-md mb-3">
+                                        <span className="text-muted">Peminjam</span>
+                                        <span className="text-ink font-medium truncate">{loan.borrower_name}</span>
+                                        <span className="text-muted">No. WA</span>
+                                        <span className="text-ink truncate">{loan.borrower_phone}</span>
+                                        <span className="text-muted">Tgl Pinjam</span>
+                                        <span className="text-ink">{formatDate(loan.loan_date)}</span>
+                                        <span className="text-muted">Tgl Kembali</span>
+                                        <span className={isOverdue ? 'text-status-err font-semibold' : 'text-ink'}>
+                                            {loan.return_date ? formatDate(loan.return_date) : '—'}
+                                        </span>
+                                    </div>
+                                    {loan.status === 'Active' && (
+                                        <ConfirmAction
+                                            onConfirm={() => handleReturn(loan)}
+                                            title="Konfirmasi Pengembalian"
+                                            description={`Selesaikan peminjaman barang "${loan.item?.name}" oleh ${loan.borrower_name}?`}
+                                            confirmText="Selesaikan"
+                                            variant="default"
+                                        >
+                                            <button
+                                                disabled={isReturning === loan.id}
+                                                className="w-full relative inline-flex items-center justify-center text-label-md text-primary border border-primary px-3 py-2 rounded-lg hover:bg-primary hover:text-on-primary transition-colors font-semibold disabled:opacity-50"
+                                            >
+                                                <span className={isReturning === loan.id ? 'opacity-0' : ''}>Selesaikan Peminjaman</span>
+                                                {isReturning === loan.id && (
+                                                    <span className="absolute inset-0 flex items-center justify-center">
+                                                        <Spinner className="size-4 text-current" />
+                                                    </span>
+                                                )}
+                                            </button>
+                                        </ConfirmAction>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    }) : (
+                        <div className="bg-surface rounded-xl border border-border-base p-12 text-center text-muted">
+                            <span className="material-symbols-outlined text-[36px] block mb-2 text-border-base">handshake</span>
+                            Tidak ada data peminjaman
+                        </div>
+                    )}
+                </div>
+
+                {/* === DESKTOP TABLE === */}
+                <div className="hidden sm:block bg-surface rounded-xl border border-border-base shadow-card overflow-x-auto">
                     <table className="w-full min-w-[760px] border-collapse">
                         <thead>
                             <tr className="border-b border-border-base bg-bg">
@@ -247,9 +361,9 @@ export default function PeminjamanIndex({ loans, filters, items_available }) {
                                             <p className="text-label-md text-muted">{loan.borrower_phone}</p>
                                         </td>
                                         <td className="py-3 px-4">
-                                            <p className="text-body-sm text-ink">{loan.loan_date}</p>
+                                            <p className="text-body-sm text-ink">{formatDate(loan.loan_date)}</p>
                                             <p className={`text-label-md ${isOverdue ? 'text-status-err font-semibold' : 'text-muted'}`}>
-                                                Kembali: {loan.return_date ?? '—'}
+                                                Kembali: {loan.return_date ? formatDate(loan.return_date) : '—'}
                                             </p>
                                         </td>
                                         <td className="py-3 px-4">
@@ -264,8 +378,18 @@ export default function PeminjamanIndex({ loans, filters, items_available }) {
                                                     confirmText="Selesaikan"
                                                     variant="default"
                                                 >
-                                                    <button className="text-label-md text-primary border border-primary px-3 py-1.5 rounded-lg hover:bg-primary hover:text-on-primary transition-colors font-semibold">
-                                                        Selesaikan
+                                                    <button 
+                                                        disabled={isReturning === loan.id}
+                                                        className="relative inline-flex items-center justify-center text-label-md text-primary border border-primary px-3 py-1.5 rounded-lg hover:bg-primary hover:text-on-primary transition-colors font-semibold disabled:opacity-50 disabled:pointer-events-none"
+                                                    >
+                                                        <span className={isReturning === loan.id ? 'opacity-0' : ''}>
+                                                            Selesaikan
+                                                        </span>
+                                                        {isReturning === loan.id && (
+                                                            <span className="absolute inset-0 flex items-center justify-center">
+                                                                <Spinner className="size-4 text-current" />
+                                                            </span>
+                                                        )}
                                                     </button>
                                                 </ConfirmAction>
                                             )}
@@ -292,9 +416,21 @@ export default function PeminjamanIndex({ loans, filters, items_available }) {
 
             <LoanForm
                 show={showLoanForm}
-                onClose={() => setShowLoanForm(false)}
+                onClose={() => { setShowLoanForm(false); setInitialItemId(''); }}
                 items_available={items_available}
+                initialItemId={initialItemId}
             />
+            {loanToReturn && (
+                <ConfirmAction
+                    open={returnConfirmOpen}
+                    onOpenChange={setReturnConfirmOpen}
+                    onConfirm={() => handleReturn(loanToReturn)}
+                    title="Konfirmasi Pengembalian"
+                    description={`Selesaikan peminjaman barang "${loanToReturn.item?.name}" oleh ${loanToReturn.borrower_name}?`}
+                    confirmText="Selesaikan"
+                    variant="default"
+                />
+            )}
         </AdminLayout>
     );
 }
