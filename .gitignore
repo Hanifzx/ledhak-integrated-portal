@@ -13,6 +13,7 @@
 /.vscode
 /.zed
 /auth.json
+/bootstrap/ssr
 /node_modules
 /public/build
 /public/fonts-manifest.dev.json
@@ -26,3 +27,10 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /database/*.sqlite*
+/.claude
+/stitch_screens
+/.agents/skills/
+*.bak
+*.tmp
+*.swp
+/storage/*.php
