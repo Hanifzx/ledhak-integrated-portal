@@ -49,3 +49,18 @@ export const TOAST_MESSAGES = {
     deleted: { title: 'Berhasil dihapus', description: null },
     failed:  { title: 'Gagal',            description: 'Terjadi kesalahan. Silakan coba lagi.' },
 };
+
+// ── Shortcut helpers — gunakan ini daripada mengakses TOAST_MESSAGES manual ──
+
+/** Tampilkan toast sukses dari key TOAST_MESSAGES */
+export function toastMsg(key) {
+    const m = TOAST_MESSAGES[key];
+    if (m) toastSuccess(m.title, m.description);
+}
+
+/** Tampilkan toast error standar "Gagal" */
+export function toastFailed() {
+    const m = TOAST_MESSAGES.failed;
+    toastError(m.title, m.description);
+}
+
