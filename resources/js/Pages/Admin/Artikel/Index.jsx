@@ -3,9 +3,10 @@ import { Head, Link, router } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import StatusBadge from '@/Components/Admin/StatusBadge';
 import Pagination from '@/Components/Admin/Pagination';
-import { useDebounce } from '@/Utils/debounce';
-import { toastSuccess, toastError, TOAST_MESSAGES } from '@/Utils/toast';
 import ConfirmAction from '@/Components/Admin/ConfirmAction';
+import { PageHeader, SearchInput, FilterBar } from '@/Components/Admin/AdminUI';
+import { useDebounce } from '@/Utils/debounce';
+import { toastMsg, toastFailed } from '@/Utils/toast';
 
 const FILTER_LABELS = [
     { label: 'Semua', value: '' },
@@ -28,11 +29,8 @@ export default function ArtikelIndex({ articles, filters }) {
 
     const handleDelete = (article) => {
         router.delete(route('admin.artikel.destroy', article.id), {
-            onSuccess: () => {
-                const m = TOAST_MESSAGES.articleDeleted;
-                toastSuccess(m.title, m.description);
-            },
-            onError: () => toastError(TOAST_MESSAGES.failed.title, TOAST_MESSAGES.failed.description),
+            onSuccess: () => toastMsg('articleDeleted'),
+            onError: toastFailed,
         });
     };
 
@@ -47,51 +45,76 @@ export default function ArtikelIndex({ articles, filters }) {
             <Head title="Artikel — LeDHaK" />
 
             <div className="max-w-6xl mx-auto space-y-5">
-                {/* Header */}
-                <div className="flex items-end justify-between">
-                    <div>
-                        <h2 className="text-h1 text-ink">Manajemen Artikel</h2>
-                        <p className="text-body-sm text-muted mt-1">{articles?.total ?? 0} total artikel</p>
-                    </div>
-                    <Link
-                        href={route('admin.artikel.create')}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-lg text-body-sm font-semibold hover:bg-primary-dark transition-colors shadow-card"
-                    >
-                        <span className="material-symbols-outlined text-[18px]">add</span>
-                        Tulis Artikel
-                    </Link>
-                </div>
+                <PageHeader
+                    title="Manajemen Artikel"
+                    subtitle={`${articles?.total ?? 0} total artikel`}
+                    action={
+                        <Link
+                            href={route('admin.artikel.create')}
+                            className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-lg text-body-sm font-semibold hover:bg-primary-dark transition-colors shadow-card"
+                        >
+                            <span className="material-symbols-outlined text-[18px]">add</span>
+                            Tulis Artikel
+                        </Link>
+                    }
+                />
 
                 {/* Search + Filter */}
                 <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="relative flex-1">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-subtle text-[18px]">search</span>
-                        <input
-                            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border-base bg-surface text-body-md text-ink placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-primary"
-                            placeholder="Cari judul artikel..."
-                            value={searchVal}
-                            onChange={handleSearchChange}
-                        />
-                    </div>
-                    <div className="flex gap-2">
-                        {FILTER_LABELS.map(f => (
-                            <button
-                                key={f.value}
-                                onClick={() => applyFilter(f.value)}
-                                className={`px-4 py-2 rounded-full text-label-md font-semibold transition-colors ${
-                                    activeFilter === f.value
-                                        ? 'bg-primary text-on-primary'
-                                        : 'bg-surface border border-border-base text-muted hover:bg-bg'
-                                }`}
-                            >
-                                {f.label}
-                            </button>
-                        ))}
-                    </div>
+                    <SearchInput
+                        value={searchVal}
+                        onChange={handleSearchChange}
+                        placeholder="Cari judul artikel..."
+                    />
+                    <FilterBar
+                        items={FILTER_LABELS}
+                        activeValue={activeFilter}
+                        onSelect={applyFilter}
+                    />
                 </div>
 
-                {/* Table */}
-                <div className="bg-surface rounded-xl border border-border-base shadow-card overflow-x-auto">
+                {/* === MOBILE CARD LIST === */}
+                <div className="sm:hidden space-y-3">
+                    {articles?.data?.length > 0 ? articles.data.map((article) => (
+                        <div key={article.id} className="bg-surface rounded-xl border border-border-base shadow-card p-4">
+                            <div className="flex items-start justify-between gap-3 mb-2">
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-body-sm font-semibold text-ink">{article.title}</p>
+                                    <p className="text-label-caps text-subtle mt-0.5 truncate">/{article.slug}</p>
+                                </div>
+                                <StatusBadge status={article.status} />
+                            </div>
+                            <p className="text-label-md text-muted mb-3">{article.updated_at_diff ?? article.updated_at}</p>
+                            <div className="flex gap-2">
+                                <Link
+                                    href={route('admin.artikel.edit', article.id)}
+                                    className="flex-1 flex items-center justify-center gap-1.5 py-2 text-label-md text-primary border border-primary rounded-lg hover:bg-primary-soft transition-colors font-medium"
+                                >
+                                    <span className="material-symbols-outlined text-[16px]">edit</span>
+                                    Edit
+                                </Link>
+                                <ConfirmAction
+                                    onConfirm={() => handleDelete(article)}
+                                    title="Hapus Artikel"
+                                    description={`Hapus artikel "${article.title}"? Tindakan ini tidak bisa dibatalkan.`}
+                                >
+                                    <button className="flex-1 flex items-center justify-center gap-1.5 py-2 text-label-md text-status-err border border-status-err-bg rounded-lg hover:bg-status-err-bg transition-colors font-medium">
+                                        <span className="material-symbols-outlined text-[16px]">delete</span>
+                                        Hapus
+                                    </button>
+                                </ConfirmAction>
+                            </div>
+                        </div>
+                    )) : (
+                        <div className="bg-surface rounded-xl border border-border-base p-12 text-center text-muted">
+                            <span className="material-symbols-outlined text-[36px] block mb-2 text-border-base">article</span>
+                            Belum ada artikel
+                        </div>
+                    )}
+                </div>
+
+                {/* === DESKTOP TABLE === */}
+                <div className="hidden sm:block bg-surface rounded-xl border border-border-base shadow-card overflow-x-auto">
                     <table className="w-full border-collapse">
                         <thead>
                             <tr className="border-b border-border-base bg-bg">

@@ -60,7 +60,7 @@ export default function ArtikelForm({ article }) {
                     </div>
 
                     {/* Status + Submit */}
-                    <div className="flex items-center justify-between pt-2 border-t border-border-base">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-border-base">
                         <div className="flex items-center gap-3">
                             <label className="text-label-md text-muted font-medium">Status:</label>
                             <div className="flex rounded-lg overflow-hidden border border-border-base">
@@ -80,17 +80,17 @@ export default function ArtikelForm({ article }) {
                                 ))}
                             </div>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 sm:justify-end">
                             <Link
                                 href={route('admin.artikel.index')}
-                                className="px-4 py-2 rounded-lg text-body-sm text-muted border border-border-base hover:bg-bg transition-colors"
+                                className="flex-1 sm:flex-none text-center px-4 py-2 rounded-lg text-body-sm text-muted border border-border-base hover:bg-bg transition-colors"
                             >
                                 Batal
                             </Link>
                             <button
                                 type="submit"
                                 disabled={form.processing}
-                                className="px-5 py-2 rounded-lg text-body-sm bg-primary text-on-primary font-semibold hover:bg-primary-dark disabled:opacity-60 transition-colors"
+                                className="flex-1 sm:flex-none px-5 py-2 rounded-lg text-body-sm bg-primary text-on-primary font-semibold hover:bg-primary-dark disabled:opacity-60 transition-colors"
                             >
                                 {form.processing ? 'Menyimpan...' : isEdit ? 'Perbarui Artikel' : 'Simpan Artikel'}
                             </button>

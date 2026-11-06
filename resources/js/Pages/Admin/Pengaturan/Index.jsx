@@ -111,12 +111,12 @@ export default function PengaturanIndex({ user, system_info, google_sheets_url }
                 )}
 
                 {/* Tab Nav */}
-                <div className="flex gap-1 bg-surface rounded-xl border border-border-base p-1 shadow-card w-fit">
+                <div className="flex gap-1 bg-surface rounded-xl border border-border-base p-1 shadow-card w-full sm:w-fit overflow-x-auto scrollbar-hide">
                     {TABS.map(tab => (
                         <button
                             key={tab.key}
                             onClick={() => setActiveTab(tab.key)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-body-sm font-medium transition-colors ${
+                            className={`flex items-center justify-center sm:justify-start flex-1 sm:flex-none whitespace-nowrap gap-2 px-4 py-2 rounded-lg text-body-sm font-medium transition-colors ${
                                 activeTab === tab.key
                                     ? 'bg-primary text-on-primary shadow-card font-semibold'
                                     : 'text-muted hover:text-ink hover:bg-bg'
