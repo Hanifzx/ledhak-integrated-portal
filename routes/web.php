@@ -14,6 +14,18 @@ Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
+// Login Redirect with Intended URL
+Route::get('/login-redirect', function (Illuminate\Http\Request $request) {
+    if ($request->has('redirect')) {
+        session()->put('url.intended', $request->query('redirect'));
+    }
+    return redirect()->route('login');
+})->name('login.redirect');
+
+// Public Item Detail (QR Code Resolution) - Menggunakan Encrypted Hash
+Route::get('/item/{hash}', [\App\Http\Controllers\PublicItemController::class, 'show'])->name('public.item.show');
+
+
 // Dashboard
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
@@ -28,6 +40,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::put('/inventaris/{item}', [InventarisController::class, 'update'])->name('inventaris.update');
     Route::patch('/inventaris/{item}/status', [InventarisController::class, 'updateStatus'])->name('inventaris.status');
     Route::delete('/inventaris/{item}', [InventarisController::class, 'destroy'])->name('inventaris.destroy');
+    Route::get('/inventaris/{item}/download-qr', [InventarisController::class, 'downloadQr'])->name('inventaris.download-qr');
 
     // Peminjaman
     Route::get('/peminjaman', [PeminjamanController::class, 'index'])->name('peminjaman.index');
