@@ -4,9 +4,10 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import StatusBadge from '@/Components/Admin/StatusBadge';
 import Modal from '@/Components/Admin/Modal';
 import Pagination from '@/Components/Admin/Pagination';
-import { useDebounce } from '@/Utils/debounce';
-import { toastSuccess, toastError, TOAST_MESSAGES } from '@/Utils/toast';
 import ConfirmAction from '@/Components/Admin/ConfirmAction';
+import { PageHeader, SearchInput } from '@/Components/Admin/AdminUI';
+import { useDebounce } from '@/Utils/debounce';
+import { toastMsg, toastFailed } from '@/Utils/toast';
 
 const DEFAULT_PHOTO = '/images/assets/item_default.webp';
 // Status untuk dropdown tambah/edit barang baru
@@ -123,15 +124,6 @@ function ItemForm({ form, onPhotoChange, photoPreview, onSubmit, onClose, title 
                             required
                         />
                         {form.errors.name && <p className="text-label-md text-status-err mt-1">{form.errors.name}</p>}
-                    </div>
-                    <div>
-                        <label className="block text-label-md text-muted mb-1">Kode Barang (opsional)</label>
-                        <input
-                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-surface font-mono"
-                            value={form.data.item_code}
-                            onChange={e => form.setData('item_code', e.target.value)}
-                            placeholder="Auto-generate jika kosong"
-                        />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <div>
@@ -283,6 +275,70 @@ function StatusModal({ item, onClose }) {
     );
 }
 
+function DetailModal({ item, onClose }) {
+    if (!item) return null;
+    
+    return (
+        <Modal show title="Detail Barang" onClose={onClose} size="md">
+            <div className="space-y-5">
+                <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start">
+                    {/* Item Photo */}
+                    <div className="w-full sm:w-32 h-40 sm:h-32 rounded-xl border border-border-base bg-bg overflow-hidden flex-shrink-0">
+                        <img 
+                            src={item.photo_url || DEFAULT_PHOTO} 
+                            alt={item.name} 
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                    {/* Item Info */}
+                    <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                            <p className="text-label-caps text-primary font-mono bg-primary-soft px-2 py-0.5 rounded">{item.item_code}</p>
+                            <StatusBadge status={item.status} />
+                        </div>
+                        <h3 className="text-h2 text-ink mt-2 mb-1">{item.name}</h3>
+                        <p className="text-body-sm text-subtle">{item.category}</p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-border-base">
+                    <div>
+                        <h4 className="text-label-sm text-muted mb-2">Deskripsi Barang</h4>
+                        <p className="text-body-md text-ink whitespace-pre-wrap">
+                            {item.description || <span className="text-subtle italic">Tidak ada deskripsi.</span>}
+                        </p>
+                    </div>
+                    <div>
+                        <h4 className="text-label-sm text-muted mb-2">QR Code</h4>
+                        {item.qr_code_url ? (
+                            <div className="flex flex-col items-start gap-3">
+                                <div className="p-2 bg-white border border-border-base rounded-xl inline-block shadow-sm">
+                                    <img src={item.qr_code_url} alt="QR Code" className="w-32 h-32" />
+                                </div>
+                                <a 
+                                    href={route('admin.inventaris.download-qr', item.id)} 
+                                    className="flex items-center gap-2 text-label-md text-primary hover:text-primary-dark transition-colors"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">download</span>
+                                    Unduh QR Code
+                                </a>
+                            </div>
+                        ) : (
+                            <p className="text-body-sm text-subtle italic">QR Code belum digenerate.</p>
+                        )}
+                    </div>
+                </div>
+
+                <div className="flex justify-end pt-4">
+                    <button onClick={onClose} className="px-5 py-2 rounded-lg text-body-sm bg-surface text-ink border border-border-base hover:bg-bg transition-colors font-semibold">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </Modal>
+    );
+}
+
 const FILTER_LABELS = ['Semua', 'Tersedia', 'Dipinjam', 'Perbaikan', 'Hilang'];
 
 export default function InventarisIndex({ items, filters }) {
@@ -290,11 +346,11 @@ export default function InventarisIndex({ items, filters }) {
     const [addPhotoPreview, setAddPhotoPreview] = useState(null);
     const [editPhotoPreview, setEditPhotoPreview] = useState(null);
 
-    const addForm = useForm({ name: '', item_code: '', category: '', status: 'Tersedia', description: '', photo: null });
-    const editForm = useForm({ name: '', item_code: '', category: '', status: 'Tersedia', description: '', photo: null, _method: 'PUT' });
+    const addForm = useForm({ name: '', category: '', status: 'Tersedia', description: '', photo: null });
+    const editForm = useForm({ name: '', category: '', status: 'Tersedia', description: '', photo: null, _method: 'PUT' });
 
     const openEdit = (item) => {
-        editForm.setData({ name: item.name, item_code: item.item_code, category: item.category, status: item.status, description: item.description ?? '', photo: null, _method: 'PUT' });
+        editForm.setData({ name: item.name, category: item.category, status: item.status, description: item.description ?? '', photo: null, _method: 'PUT' });
         setEditPhotoPreview(item.photo_url || null);
         setModal({ type: 'edit', item });
     };
@@ -302,34 +358,23 @@ export default function InventarisIndex({ items, filters }) {
     const handleAdd = (e) => {
         e.preventDefault();
         addForm.post(route('admin.inventaris.store'), {
-            onSuccess: () => {
-                const m = TOAST_MESSAGES.itemAdded;
-                toastSuccess(m.title, m.description);
-                addForm.reset(); setAddPhotoPreview(null); setModal(null);
-            },
-            onError: () => toastError(TOAST_MESSAGES.failed.title, TOAST_MESSAGES.failed.description),
+            onSuccess: () => { toastMsg('itemAdded'); addForm.reset(); setAddPhotoPreview(null); setModal(null); },
+            onError: toastFailed,
         });
     };
 
     const handleEdit = (e) => {
         e.preventDefault();
         editForm.post(route('admin.inventaris.update', modal.item.id), {
-            onSuccess: () => {
-                const m = TOAST_MESSAGES.itemUpdated;
-                toastSuccess(m.title, m.description);
-                setModal(null);
-            },
-            onError: () => toastError(TOAST_MESSAGES.failed.title, TOAST_MESSAGES.failed.description),
+            onSuccess: () => { toastMsg('itemUpdated'); setModal(null); },
+            onError: toastFailed,
         });
     };
 
     const handleDelete = (item) => {
         router.delete(route('admin.inventaris.destroy', item.id), {
-            onSuccess: () => {
-                const m = TOAST_MESSAGES.itemDeleted;
-                toastSuccess(m.title, m.description);
-            },
-            onError: () => toastError(TOAST_MESSAGES.failed.title, TOAST_MESSAGES.failed.description),
+            onSuccess: () => toastMsg('itemDeleted'),
+            onError: toastFailed,
         });
     };
 
@@ -355,34 +400,27 @@ export default function InventarisIndex({ items, filters }) {
             <Head title="Inventaris — LeDHaK" />
 
             <div className="max-w-6xl mx-auto space-y-5">
-                {/* Header */}
-                <div className="flex items-end justify-between">
-                    <div>
-                        <h2 className="text-h1 text-ink">Daftar Barang</h2>
-                        <p className="text-body-sm text-muted mt-1">
-                            {items?.total ?? 0} total aset inventaris
-                        </p>
-                    </div>
-                    <button
-                        onClick={() => setModal({ type: 'add' })}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-lg text-body-sm font-semibold hover:bg-primary-dark transition-colors shadow-card"
-                    >
-                        <span className="material-symbols-outlined text-[18px]">add</span>
-                        Tambah Barang
-                    </button>
-                </div>
+                <PageHeader
+                    title="Daftar Barang"
+                    subtitle={`${items?.total ?? 0} total aset inventaris`}
+                    action={
+                        <button
+                            onClick={() => setModal({ type: 'add' })}
+                            className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-lg text-body-sm font-semibold hover:bg-primary-dark transition-colors shadow-card"
+                        >
+                            <span className="material-symbols-outlined text-[18px]">add</span>
+                            Tambah Barang
+                        </button>
+                    }
+                />
 
                 {/* Search + Filter */}
                 <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="relative flex-1">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-subtle text-[18px]">search</span>
-                        <input
-                            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border-base bg-surface text-body-md text-ink placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-primary"
-                            placeholder="Cari kode atau nama barang..."
-                            value={searchVal}
-                            onChange={handleSearchChange}
-                        />
-                    </div>
+                    <SearchInput
+                        value={searchVal}
+                        onChange={handleSearchChange}
+                        placeholder="Cari kode atau nama barang..."
+                    />
                     <div className="flex gap-2 flex-wrap">
                         {FILTER_LABELS.map(f => (
                             <button
@@ -403,7 +441,11 @@ export default function InventarisIndex({ items, filters }) {
                 {/* Item Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {items?.data?.length > 0 ? items.data.map((item) => (
-                        <div key={item.id} className="bg-surface rounded-xl border border-border-base shadow-card hover:shadow-card-hover hover:border-primary transition-all group">
+                        <div 
+                            key={item.id} 
+                            onClick={() => setModal({ type: 'detail', item })}
+                            className="bg-surface rounded-xl border border-border-base shadow-card hover:shadow-card-hover hover:border-primary transition-all group cursor-pointer"
+                        >
                             <div className="p-4 flex gap-4 items-start">
                                 <div className="w-16 h-16 rounded-lg bg-bg flex-shrink-0 overflow-hidden border border-border-base">
                                     <img
@@ -421,24 +463,24 @@ export default function InventarisIndex({ items, filters }) {
                                     <p className="text-label-md text-muted">{item.category}</p>
                                 </div>
                             </div>
-                            <div className="border-t border-border-base px-4 py-2.5 flex gap-2 justify-end">
+                            <div className="border-t border-border-base px-4 py-2.5 flex gap-2 justify-end" onClick={e => e.stopPropagation()}>
                                 {/* Semua item bisa ubah status, termasuk Dipinjam (skenario hilang/rusak saat dipinjam) */}
                                 <button
-                                    onClick={() => setModal({ type: 'status', item })}
+                                    onClick={(e) => { e.stopPropagation(); setModal({ type: 'status', item }); }}
                                     className="text-label-md text-primary border border-primary px-3 py-1 rounded-lg hover:bg-primary-soft transition-colors font-medium"
                                 >
                                     Ubah Status
                                 </button>
-                                <button onClick={() => openEdit(item)} className="text-label-md text-muted border border-border-base px-3 py-1 rounded-lg hover:bg-bg transition-colors font-medium">
-                                    Edit
+                                <button onClick={(e) => { e.stopPropagation(); openEdit(item); }} className="flex items-center justify-center text-muted border border-border-base p-1.5 rounded-lg hover:bg-bg transition-colors" title="Edit">
+                                    <span className="material-symbols-outlined text-[18px]">edit</span>
                                 </button>
                                 <ConfirmAction 
                                     onConfirm={() => handleDelete(item)} 
                                     title={`Hapus "${item.name}"?`} 
                                     description="Tindakan ini tidak bisa dibatalkan."
                                 >
-                                    <button className="text-label-md text-status-err border border-status-err-bg px-3 py-1 rounded-lg hover:bg-status-err-bg transition-colors font-medium">
-                                        Hapus
+                                    <button onClick={(e) => e.stopPropagation()} className="flex items-center justify-center text-status-err border border-status-err-bg p-1.5 rounded-lg hover:bg-status-err-bg transition-colors" title="Hapus">
+                                        <span className="material-symbols-outlined text-[18px]">delete</span>
                                     </button>
                                 </ConfirmAction>
                             </div>
@@ -478,6 +520,9 @@ export default function InventarisIndex({ items, filters }) {
             )}
             {modal?.type === 'status' && (
                 <StatusModal item={modal.item} onClose={() => setModal(null)} />
+            )}
+            {modal?.type === 'detail' && (
+                <DetailModal item={modal.item} onClose={() => setModal(null)} />
             )}
         </AdminLayout>
     );
