@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, usePage, useForm } from '@inertiajs/react';
-import { Toaster } from '@/components/ui/sonner';
+import { Toaster } from '@/Components/ui/sonner';
 import { toastSuccess, toastError, toastInfo } from '@/Utils/toast';
 
 const navItems = [
