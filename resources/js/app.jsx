@@ -5,10 +5,17 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot, hydrateRoot } from 'react-dom/client';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'LeDHaK UNHAS';
 
 createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
+    title: (title) => {
+        if (!title) return appName;
+        const cleanTitle = title.replace(/—/g, '-').trim();
+        if (cleanTitle.toLowerCase().includes(appName.toLowerCase())) {
+            return cleanTitle;
+        }
+        return `${cleanTitle} | ${appName}`;
+    },
     resolve: (name) =>
         resolvePageComponent(
             `./Pages/${name}.jsx`,

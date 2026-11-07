@@ -42,7 +42,7 @@ export default function ArtikelIndex({ articles, filters }) {
 
     return (
         <AdminLayout title="Artikel">
-            <Head title="Artikel — LeDHaK" />
+            <Head title="Artikel" />
 
             <div className="max-w-6xl mx-auto space-y-5">
                 <PageHeader

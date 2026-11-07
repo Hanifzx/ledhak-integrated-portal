@@ -417,7 +417,7 @@ export default function InventarisIndex({ items, filters }) {
 
     return (
         <AdminLayout title="Inventaris">
-            <Head title="Inventaris — LeDHaK" />
+            <Head title="Inventaris" />
 
             <div className="max-w-6xl mx-auto space-y-5">
                 <PageHeader

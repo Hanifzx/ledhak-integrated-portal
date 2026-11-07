@@ -234,7 +234,7 @@ export default function PeminjamanIndex({ loans, filters, items_available }) {
 
     return (
         <AdminLayout title="Peminjaman">
-            <Head title="Peminjaman — LeDHaK" />
+            <Head title="Peminjaman" />
 
             <div className="max-w-6xl mx-auto space-y-5">
                 <PageHeader

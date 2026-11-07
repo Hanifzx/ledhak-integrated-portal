@@ -177,7 +177,7 @@ export default function Dashboard({ metrics, overdue_loans, recent_logs, draft_a
     const [showAddModal, setShowAddModal] = useState(false);
     return (
         <AdminLayout title="Beranda">
-            <Head title="Dashboard — LeDHaK" />
+            <Head title="Dashboard" />
 
             <div className="max-w-6xl mx-auto space-y-5">
                 {/* Page Header */}

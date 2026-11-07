@@ -35,7 +35,7 @@ export default function LaporanIndex({ logs, filters, total }) {
 
     return (
         <AdminLayout title="Laporan">
-            <Head title="Laporan — LeDHaK" />
+            <Head title="Laporan" />
 
             <div className="max-w-5xl mx-auto space-y-5">
                 <PageHeader

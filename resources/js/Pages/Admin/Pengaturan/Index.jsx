@@ -478,7 +478,7 @@ export default function PengaturanIndex({ user, system_info, google_sheets_url, 
 
     return (
         <AdminLayout title="Pengaturan">
-            <Head title="Pengaturan — LeDHaK" />
+            <Head title="Pengaturan" />
 
             <div className="max-w-4xl mx-auto space-y-5">
                 <PageHeader

@@ -98,7 +98,7 @@ export default function ItemDetail({ item, hash }) {
 
     return (
         <div className="min-h-screen bg-bg flex flex-col">
-            <Head title={`${item.name} — LeDHaK`} />
+            <Head title={item.name} />
 
             {/* ══════════════════════════════════════
                 MOBILE  (<sm): full-screen vertical

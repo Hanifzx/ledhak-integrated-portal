@@ -22,7 +22,7 @@ export default function Login({ status, canResetPassword }) {
 
     return (
         <div className="min-h-screen flex flex-col lg:flex-row bg-bg">
-            <Head title="Masuk - Portal Terintegrasi LeDHaK UNHAS" />
+            <Head title="Login" />
 
             {/* ── LEFT HERO PANEL (DESKTOP) ── */}
             <div className="hidden lg:flex lg:w-[46%] xl:w-[48%] min-h-screen relative bg-primary text-white flex-col items-center justify-center text-center p-10 xl:p-16 overflow-hidden shadow-2xl select-none flex-shrink-0">
@@ -69,15 +69,15 @@ export default function Login({ status, canResetPassword }) {
             </div>
 
             {/* ── RIGHT FORM PANEL (MOBILE & DESKTOP) ── */}
-            <div className="flex-1 flex flex-col justify-start lg:justify-center items-center px-4 pt-4 pb-8 sm:px-8 lg:px-12 xl:px-20 min-h-screen">
+            <div className="flex-1 flex flex-col justify-start lg:justify-center items-center px-4 pt-16 pb-10 sm:px-8 lg:px-12 xl:px-20 min-h-screen">
                 <div className="w-full max-w-md mx-auto">
 
                     {/* Mobile Brand Header (< lg) */}
-                    <div className="lg:hidden text-center mb-4">
+                    <div className="lg:hidden text-center mb-5">
                         <img
                             src="/images/logo/logo LeDHaK UNHAS.webp"
                             alt="Logo LeDHaK UNHAS"
-                            className="w-14 h-14 mx-auto mb-2 object-contain drop-shadow-sm"
+                            className="w-16 h-16 mx-auto mb-2.5 object-contain drop-shadow-sm"
                         />
                         <span className="text-caption font-bold text-primary tracking-wider block">
                             LeDHaK UNHAS
@@ -238,7 +238,7 @@ export default function Login({ status, canResetPassword }) {
                     </div>
 
                     {/* Mobile Copyright (< lg) */}
-                    <div className="lg:hidden mt-6 text-center text-caption text-muted/70">
+                    <div className="lg:hidden mt-5 text-center text-[11px] text-muted/60 leading-normal">
                         &copy; {new Date().getFullYear()} UKM LeDHaK UNHAS &bull; All rights reserved.
                     </div>
 

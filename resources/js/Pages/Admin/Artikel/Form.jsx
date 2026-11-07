@@ -22,7 +22,7 @@ export default function ArtikelForm({ article }) {
 
     return (
         <AdminLayout title={isEdit ? 'Edit Artikel' : 'Tulis Artikel'}>
-            <Head title={`${isEdit ? 'Edit' : 'Tulis'} Artikel — LeDHaK`} />
+            <Head title={isEdit ? 'Edit Artikel' : 'Tulis Artikel'} />
 
             <div className="max-w-3xl mx-auto space-y-5">
                 <PageHeader
