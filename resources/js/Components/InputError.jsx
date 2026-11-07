@@ -2,9 +2,10 @@ export default function InputError({ message, className = '', ...props }) {
     return message ? (
         <p
             {...props}
-            className={'text-sm text-red-600 ' + className}
+            className={'text-body-sm text-status-err font-medium flex items-center gap-1.5 mt-1.5 ' + className}
         >
-            {message}
+            <span className="material-symbols-outlined text-[16px] flex-shrink-0">error</span>
+            <span>{message}</span>
         </p>
     ) : null;
 }

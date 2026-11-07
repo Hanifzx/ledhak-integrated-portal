@@ -20,9 +20,9 @@
   --color-border:       #E2E0DE;   /* soft warm border */
   --color-border-strong:#B8B5B2;   /* stronger border / divider */
 
-  /* --- Primary Brand (Maroon) --- */
-  --color-primary:      #810100;   /* Maroon — buttons, active states */
-  --color-primary-dark: #4A0101;   /* hover state */
+  /* --- Primary Brand (Dark Red #8B0000) --- */
+  --color-primary:      #8B0000;   /* Dark Red — buttons, active states, sidebar */
+  --color-primary-dark: #650000;   /* hover state */
   --color-primary-soft: #F9ECEC;   /* light tint for hover bg */
   --color-on-primary:   #FFFFFF;   /* text on primary buttons */
 
