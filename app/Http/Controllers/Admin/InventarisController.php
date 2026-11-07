@@ -156,14 +156,17 @@ class InventarisController extends Controller
 
     public function destroy(Item $item)
     {
-        InventoryLog::create([
-            'item_id' => $item->id,
-            'user_id' => Auth::id(),
-            'action'  => 'Barang dihapus',
-            'notes'   => "Menghapus barang dari sistem: {$item->name}",
-        ]);
+        if (!$item->trashed()) {
+            InventoryLog::create([
+                'item_id' => $item->id,
+                'user_id' => Auth::id(),
+                'action'  => 'Barang dihapus',
+                'notes'   => "Menghapus barang dari sistem: {$item->name}",
+            ]);
 
-        $item->delete();
+            $item->delete();
+        }
+
         return redirect()->route('admin.inventaris.index');
     }
 

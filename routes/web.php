@@ -39,7 +39,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('/inventaris', [InventarisController::class, 'store'])->name('inventaris.store');
     Route::put('/inventaris/{item}', [InventarisController::class, 'update'])->name('inventaris.update');
     Route::patch('/inventaris/{item}/status', [InventarisController::class, 'updateStatus'])->name('inventaris.status');
-    Route::delete('/inventaris/{item}', [InventarisController::class, 'destroy'])->name('inventaris.destroy');
+    Route::delete('/inventaris/{item}', [InventarisController::class, 'destroy'])->name('inventaris.destroy')->withTrashed();
     Route::get('/inventaris/{item}/download-qr', [InventarisController::class, 'downloadQr'])->name('inventaris.download-qr');
 
     // Peminjaman
