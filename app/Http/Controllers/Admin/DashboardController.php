@@ -50,6 +50,7 @@ class DashboardController extends Controller
             'overdue_loans'   => $overdueLoans,
             'recent_logs'     => $recentLogs,
             'draft_articles'  => $draftArticles,
+            'items_available' => Item::where('status', 'Tersedia')->select('id', 'item_code', 'name')->get(),
         ]);
     }
 }

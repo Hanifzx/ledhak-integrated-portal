@@ -13,14 +13,14 @@ export default function DatePicker({ value, onChange, placeholder = "Pilih tangg
             <PopoverTrigger asChild>
                 <button
                     type="button"
-                    className={`w-full px-3 py-2 rounded-lg border border-border-base bg-surface text-body-md text-left flex items-center justify-between transition-colors hover:border-primary/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
+                    className={`w-full px-2.5 sm:px-3 py-2 rounded-lg border border-border-base bg-surface text-body-sm sm:text-body-md text-left flex items-center justify-between transition-colors hover:border-primary/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${
                         !date ? 'text-muted' : 'text-ink font-medium'
                     } ${className}`}
                 >
                     <span className="truncate">
-                        {date ? format(date, "d MMMM yyyy", { locale: id }) : placeholder}
+                        {date ? format(date, "d MMM yyyy", { locale: id }) : placeholder}
                     </span>
-                    <span className="material-symbols-outlined text-subtle text-[18px] flex-shrink-0 ml-2">
+                    <span className="material-symbols-outlined text-subtle text-[16px] sm:text-[18px] flex-shrink-0 ml-1.5 sm:ml-2">
                         calendar_today
                     </span>
                 </button>

@@ -167,8 +167,11 @@ export default function PeminjamanIndex({ loans, filters, items_available }) {
         const action = params.get('scan_action');
         const itemId = params.get('item_id');
         const loanId = params.get('loan_id');
+        const isCatat = params.get('catat') === 'true';
 
-        if (action === 'loan' && itemId) {
+        if (isCatat) {
+            setShowLoanForm(true);
+        } else if (action === 'loan' && itemId) {
             setInitialItemId(itemId);
             setShowLoanForm(true);
         } else if (action === 'return' && loanId) {

@@ -78,21 +78,21 @@ export default function LaporanIndex({ logs, filters, total }) {
                                 />
                             </div>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-w-[280px]">
+                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
                             <div>
-                                <label className="block text-body-sm font-semibold text-ink mb-1">Dari Tanggal</label>
+                                <label className="block text-body-sm font-semibold text-ink mb-1 truncate">Dari Tanggal</label>
                                 <DatePicker
                                     value={dateFrom}
                                     onChange={setDateFrom}
-                                    placeholder="Pilih tanggal mulai"
+                                    placeholder="Pilih tanggal"
                                 />
                             </div>
                             <div>
-                                <label className="block text-body-sm font-semibold text-ink mb-1">Sampai Tanggal</label>
+                                <label className="block text-body-sm font-semibold text-ink mb-1 truncate">Sampai Tanggal</label>
                                 <DatePicker
                                     value={dateTo}
                                     onChange={setDateTo}
-                                    placeholder="Pilih tanggal akhir"
+                                    placeholder="Pilih tanggal"
                                 />
                             </div>
                         </div>

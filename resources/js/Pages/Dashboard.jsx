@@ -1,155 +1,10 @@
-import { useState, useRef } from 'react';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { useState } from 'react';
+import { Head, Link } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import StatusBadge from '@/Components/Admin/StatusBadge';
-import Modal from '@/Components/Admin/Modal';
-import CustomSelect from '@/Components/Admin/CustomSelect';
+import LoanFormModal from '@/Components/Admin/LoanFormModal';
 import { PageHeader } from '@/Components/Admin/AdminUI';
-import { toastSuccess, toastError, toastInfo, TOAST_MESSAGES } from '@/Utils/toast';
-
-const DEFAULT_PHOTO = '/images/assets/item_default.webp';
-const STATUS_OPTIONS = ['Tersedia', 'Dipinjam', 'Perbaikan'];
-const CATEGORY_OPTIONS = [
-    'Spanduk & Banner', 'Elektronik & Sound', 'Alat Tulis & Kantor',
-    'Perlengkapan Acara', 'Peralatan Fotografi', 'Lain-lain',
-];
-
-function cropToSquareBlob(file) {
-    return new Promise((resolve) => {
-        const url = URL.createObjectURL(file);
-        const img = new Image();
-        img.onload = () => {
-            const size = Math.min(img.width, img.height);
-            const x = (img.width - size) / 2;
-            const y = (img.height - size) / 2;
-            const canvas = document.createElement('canvas');
-            canvas.width = 500; canvas.height = 500;
-            canvas.getContext('2d').drawImage(img, x, y, size, size, 0, 0, 500, 500);
-            URL.revokeObjectURL(url);
-            canvas.toBlob(resolve, 'image/jpeg', 0.88);
-        };
-        img.src = url;
-    });
-}
-
-function PhotoInput({ preview, onFileChange, error }) {
-    const inputRef = useRef();
-    const handleChange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        if (file.size > 1024 * 1024) { alert('Ukuran file maksimal 1 MB'); e.target.value = ''; return; }
-        const blob = await cropToSquareBlob(file);
-        const cropped = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' });
-        onFileChange(cropped, URL.createObjectURL(blob));
-    };
-    return (
-        <div>
-            <label className="block text-label-md text-muted mb-2">Foto Barang</label>
-            <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-lg border-2 border-dashed border-border-base overflow-hidden bg-bg flex-shrink-0">
-                    <img src={preview || DEFAULT_PHOTO} alt="Preview" className="w-full h-full object-cover" />
-                </div>
-                <div className="flex-1">
-                    <button type="button" onClick={() => inputRef.current.click()}
-                        className="flex items-center gap-2 px-3 py-2 border border-border-base rounded-lg text-body-sm text-muted hover:bg-bg hover:border-primary transition-colors">
-                        <span className="material-symbols-outlined text-[16px]">upload</span>
-                        Pilih Foto
-                    </button>
-                    <p className="text-label-caps text-subtle mt-1.5">JPEG / PNG / WebP · maks 1 MB · otomatis crop 1:1</p>
-                    {error && <p className="text-label-md text-status-err mt-1">{error}</p>}
-                    <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleChange} />
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function QuickAddItemModal({ show, onClose }) {
-    const [photoPreview, setPhotoPreview] = useState(null);
-    const form = useForm({ name: '', item_code: '', category: '', status: 'Tersedia', description: '', photo: null });
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        form.post(route('admin.inventaris.store'), {
-            forceFormData: true,
-            onSuccess: () => {
-                const m = TOAST_MESSAGES.itemAdded;
-                toastSuccess(m.title, m.description);
-                onClose();
-                router.visit(route('admin.inventaris.index'));
-            },
-            onError: () => toastError(TOAST_MESSAGES.failed.title, TOAST_MESSAGES.failed.description),
-        });
-    };
-
-    return (
-        <Modal show={show} title="Tambah Barang Baru" onClose={onClose}>
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <PhotoInput
-                    preview={photoPreview}
-                    onFileChange={(file, preview) => { form.setData('photo', file); setPhotoPreview(preview); }}
-                    error={form.errors.photo}
-                />
-                <div>
-                    <label className="block text-label-md text-muted mb-1">Nama Barang *</label>
-                    <input
-                        className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface"
-                        value={form.data.name} onChange={e => form.setData('name', e.target.value)} required
-                    />
-                    {form.errors.name && <p className="text-label-md text-status-err mt-1">{form.errors.name}</p>}
-                </div>
-                <div>
-                    <label className="block text-label-md text-muted mb-1">Kode Barang (opsional)</label>
-                    <input
-                        className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface font-mono"
-                        value={form.data.item_code} onChange={e => form.setData('item_code', e.target.value)}
-                        placeholder="Auto-generate jika kosong"
-                    />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                    <div>
-                        <label className="block text-label-md text-muted mb-1">Kategori *</label>
-                        <CustomSelect
-                            value={form.data.category}
-                            onChange={val => form.setData('category', val)}
-                            options={CATEGORY_OPTIONS}
-                            placeholder="Pilih kategori"
-                            required
-                        />
-                        {form.errors.category && <p className="text-label-md text-status-err mt-1">{form.errors.category}</p>}
-                    </div>
-                    <div>
-                        <label className="block text-label-md text-muted mb-1">Status *</label>
-                        <CustomSelect
-                            value={form.data.status}
-                            onChange={val => form.setData('status', val)}
-                            options={STATUS_OPTIONS}
-                            placeholder="Pilih status"
-                            required
-                        />
-                    </div>
-                </div>
-                <div>
-                    <label className="block text-label-md text-muted mb-1">Deskripsi</label>
-                    <textarea
-                        className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface resize-none"
-                        rows={3} value={form.data.description} onChange={e => form.setData('description', e.target.value)}
-                    />
-                </div>
-                <div className="flex justify-end gap-2 pt-2">
-                    <button type="button" onClick={onClose}
-                        className="px-4 py-2 rounded-lg text-body-sm text-muted border border-border-base hover:bg-bg transition-colors">
-                        Batal
-                    </button>
-                    <button type="submit" disabled={form.processing}
-                        className="px-5 py-2 rounded-lg text-body-sm bg-primary text-on-primary font-semibold hover:bg-primary-dark disabled:opacity-60 transition-colors">
-                        {form.processing ? 'Menyimpan...' : 'Simpan & Lihat Inventaris'}
-                    </button>
-                </div>
-            </form>
-        </Modal>
-    );
-}
+import { toastInfo } from '@/Utils/toast';
 
 function MetricCard({ icon, label, value, sub, subClass = 'text-muted' }) {
     return (
@@ -175,8 +30,8 @@ function MetricCard({ icon, label, value, sub, subClass = 'text-muted' }) {
     );
 }
 
-export default function Dashboard({ metrics, overdue_loans, recent_logs, draft_articles }) {
-    const [showAddModal, setShowAddModal] = useState(false);
+export default function Dashboard({ metrics, overdue_loans, recent_logs, draft_articles, items_available = [] }) {
+    const [showLoanModal, setShowLoanModal] = useState(false);
 
     const handleArtikelUnavailable = (e) => {
         e?.preventDefault?.();
@@ -262,11 +117,12 @@ export default function Dashboard({ metrics, overdue_loans, recent_logs, draft_a
                     <div className="bg-surface rounded-xl border border-border-base p-5 shadow-card flex flex-col justify-center gap-3">
                         <h3 className="text-h3 text-ink text-center mb-2">Aksi Cepat</h3>
                         <button
-                            onClick={() => setShowAddModal(true)}
+                            type="button"
+                            onClick={() => setShowLoanModal(true)}
                             className="w-full py-3 px-4 bg-primary text-on-primary rounded-lg text-body-sm font-semibold flex items-center justify-center gap-2 hover:bg-primary-dark transition-colors"
                         >
-                            <span className="material-symbols-outlined text-[18px]">add_box</span>
-                            Tambah Barang Baru
+                            <span className="material-symbols-outlined text-[18px]">handshake</span>
+                            Catat Peminjaman
                         </button>
                         <button
                             type="button"
@@ -333,7 +189,11 @@ export default function Dashboard({ metrics, overdue_loans, recent_logs, draft_a
                     </div>
                 </div>
             </div>
-            <QuickAddItemModal show={showAddModal} onClose={() => setShowAddModal(false)} />
+            <LoanFormModal
+                show={showLoanModal}
+                onClose={() => setShowLoanModal(false)}
+                items_available={items_available}
+            />
         </AdminLayout>
     );
 }
