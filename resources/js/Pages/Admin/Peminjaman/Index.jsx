@@ -22,6 +22,8 @@ const FILTER_LABELS = [
     { label: 'Dikembalikan', value: 'Returned' },
 ];
 
+const DEFAULT_PHOTO = '/images/assets/item_default.webp';
+
 function DatePicker({ value, onChange, placeholder = "Pilih tanggal" }) {
     const date = value ? parseISO(value) : undefined;
     return (
@@ -29,7 +31,7 @@ function DatePicker({ value, onChange, placeholder = "Pilih tanggal" }) {
             <PopoverTrigger asChild>
                 <Button 
                     variant="outline" 
-                    className={`w-full justify-between text-left font-normal border-border-base bg-surface text-body-md hover:bg-bg ${!date ? 'text-muted' : 'text-ink'}`}
+                    className={`w-full justify-between text-left font-normal border-border-base bg-surface text-body-md hover:bg-surface-mid ${!date ? 'text-muted' : 'text-ink'}`}
                 >
                     {date ? format(date, "PPP", { locale: id }) : <span>{placeholder}</span>}
                     <span className="material-symbols-outlined text-subtle text-[18px]">calendar_today</span>
@@ -274,11 +276,21 @@ export default function PeminjamanIndex({ loans, filters, items_available }) {
                         const displayStatus = isOverdue ? 'Overdue' : loan.status;
                         return (
                             <div key={loan.id} className="bg-surface rounded-xl border border-border-base shadow-card overflow-hidden">
-                                {/* Header: nama item + badge — dipisah border bawah */}
-                                <div className="flex items-start justify-between gap-2 px-4 pt-4 pb-3 border-b border-border-base">
-                                    <div className="min-w-0">
-                                        <p className="text-body-sm font-semibold text-ink truncate">{loan.item?.name}</p>
-                                        <p className="text-label-caps text-subtle font-mono">{loan.item?.item_code}</p>
+                                {/* Header: thumbnail foto + nama item + badge */}
+                                <div className="flex items-center justify-between gap-3 px-4 pt-3.5 pb-3 border-b border-border-base">
+                                    <div className="flex items-center gap-2.5 min-w-0">
+                                        <div className="w-10 h-10 rounded-lg bg-surface flex-shrink-0 overflow-hidden border border-border-base">
+                                            <img
+                                                src={loan.item?.photo_url || DEFAULT_PHOTO}
+                                                alt={loan.item?.name || 'Item'}
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => { e.currentTarget.src = DEFAULT_PHOTO; }}
+                                            />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-body-sm font-semibold text-ink truncate">{loan.item?.name}</p>
+                                            <p className="text-label-caps text-subtle font-mono">{loan.item?.item_code}</p>
+                                        </div>
                                     </div>
                                     <StatusBadge status={displayStatus} />
                                 </div>
@@ -328,13 +340,13 @@ export default function PeminjamanIndex({ loans, filters, items_available }) {
                 <div className="hidden sm:block bg-surface rounded-xl border border-border-base shadow-card overflow-x-auto">
                     <table className="w-full min-w-[760px] border-collapse">
                         <thead>
-                            <tr className="border-b border-border-base bg-bg">
-                                <th className="py-3 px-4 text-label-caps text-muted text-left w-10">No</th>
-                                <th className="py-3 px-4 text-label-caps text-muted text-left">Item Barang</th>
-                                <th className="py-3 px-4 text-label-caps text-muted text-left">Peminjam</th>
-                                <th className="py-3 px-4 text-label-caps text-muted text-left">Tanggal</th>
-                                <th className="py-3 px-4 text-label-caps text-muted text-left">Status</th>
-                                <th className="py-3 px-4 text-label-caps text-muted text-right">Aksi</th>
+                            <tr className="border-b border-border-base bg-surface">
+                                <th className="py-3 px-4 text-body-sm font-bold text-ink text-left w-10">No</th>
+                                <th className="py-3 px-4 text-body-sm font-bold text-ink text-left">Item Barang</th>
+                                <th className="py-3 px-4 text-body-sm font-bold text-ink text-left">Peminjam</th>
+                                <th className="py-3 px-4 text-body-sm font-bold text-ink text-left">Tanggal</th>
+                                <th className="py-3 px-4 text-body-sm font-bold text-ink text-left">Status</th>
+                                <th className="py-3 px-4 text-body-sm font-bold text-ink text-right">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border-base">
@@ -343,17 +355,22 @@ export default function PeminjamanIndex({ loans, filters, items_available }) {
                                 const displayStatus = isOverdue ? 'Overdue' : loan.status;
 
                                 return (
-                                    <tr key={loan.id} className="hover:bg-bg transition-colors group">
+                                    <tr key={loan.id} className="transition-colors group">
                                         <td className="py-3 px-4 text-label-md text-subtle text-center">
                                             {(loans.current_page - 1) * loans.per_page + idx + 1}
                                         </td>
                                         <td className="py-3 px-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-9 h-9 rounded-lg bg-bg flex items-center justify-center flex-shrink-0 border border-border-base">
-                                                    <span className="material-symbols-outlined text-subtle text-[16px]">inventory_2</span>
+                                                <div className="w-10 h-10 rounded-lg bg-surface flex-shrink-0 overflow-hidden border border-border-base">
+                                                    <img
+                                                        src={loan.item?.photo_url || DEFAULT_PHOTO}
+                                                        alt={loan.item?.name || 'Item'}
+                                                        className="w-full h-full object-cover"
+                                                        onError={(e) => { e.currentTarget.src = DEFAULT_PHOTO; }}
+                                                    />
                                                 </div>
-                                                <div>
-                                                    <p className="text-body-sm font-semibold text-ink">{loan.item?.name}</p>
+                                                <div className="min-w-0">
+                                                    <p className="text-body-sm font-semibold text-ink truncate">{loan.item?.name}</p>
                                                     <p className="text-label-caps text-subtle font-mono">{loan.item?.item_code}</p>
                                                 </div>
                                             </div>

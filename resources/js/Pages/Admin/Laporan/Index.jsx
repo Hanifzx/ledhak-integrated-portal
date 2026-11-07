@@ -64,11 +64,11 @@ export default function LaporanIndex({ logs, filters, total }) {
                 <div className="bg-surface rounded-xl border border-border-base p-4 shadow-card">
                     <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
                         <div className="flex-1 min-w-0">
-                            <label className="block text-label-caps text-muted mb-1">Cari</label>
+                            <label className="block text-body-sm font-semibold text-ink mb-1">Cari</label>
                             <div className="relative">
                                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-subtle text-[18px]">search</span>
                                 <input
-                                    className="w-full pl-9 pr-3 py-2 rounded-lg border border-border-base bg-bg text-body-md text-ink placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-primary"
+                                    className="w-full pl-9 pr-3 py-2 rounded-lg border border-border-base bg-surface text-body-md text-ink placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-primary"
                                     placeholder="Aksi, item, atau pengguna..."
                                     value={search}
                                     onChange={e => setSearch(e.target.value)}
@@ -78,16 +78,16 @@ export default function LaporanIndex({ logs, filters, total }) {
                         </div>
                         <div className="grid grid-cols-2 sm:flex gap-3">
                             <div>
-                                <label className="block text-label-caps text-muted mb-1">Dari Tanggal</label>
+                                <label className="block text-body-sm font-semibold text-ink mb-1">Dari Tanggal</label>
                                 <input type="date"
-                                    className="w-full sm:w-auto px-3 py-2 rounded-lg border border-border-base bg-bg text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary"
+                                    className="w-full sm:w-auto px-3 py-2 rounded-lg border border-border-base bg-surface text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary"
                                     value={dateFrom} onChange={e => setDateFrom(e.target.value)}
                                 />
                             </div>
                             <div>
-                                <label className="block text-label-caps text-muted mb-1">Sampai Tanggal</label>
+                                <label className="block text-body-sm font-semibold text-ink mb-1">Sampai Tanggal</label>
                                 <input type="date"
-                                    className="w-full sm:w-auto px-3 py-2 rounded-lg border border-border-base bg-bg text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary"
+                                    className="w-full sm:w-auto px-3 py-2 rounded-lg border border-border-base bg-surface text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary"
                                     value={dateTo} onChange={e => setDateTo(e.target.value)}
                                 />
                             </div>
@@ -98,7 +98,7 @@ export default function LaporanIndex({ logs, filters, total }) {
                                 Filter
                             </button>
                             <button onClick={resetFilter}
-                                className="flex-1 sm:flex-none px-4 py-2 border border-border-base text-muted rounded-lg text-body-sm hover:bg-bg-subtle transition-colors">
+                                className="flex-1 sm:flex-none px-4 py-2 border border-border-base bg-surface text-muted rounded-lg text-body-sm hover:border-border-strong hover:text-ink transition-colors">
                                 Reset
                             </button>
                         </div>

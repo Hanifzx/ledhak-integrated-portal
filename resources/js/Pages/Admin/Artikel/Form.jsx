@@ -48,7 +48,7 @@ export default function ArtikelForm({ article }) {
                     <div>
                         <label className="block text-label-md text-muted mb-1.5 font-medium">Judul Artikel *</label>
                         <input
-                            className="w-full px-4 py-3 rounded-lg border border-border-base text-h3 text-ink font-semibold focus:outline-none focus:ring-2 focus:ring-primary bg-bg placeholder:text-subtle"
+                            className="w-full px-4 py-3 rounded-lg border border-border-base text-h3 text-ink font-semibold focus:outline-none focus:ring-2 focus:ring-primary bg-surface placeholder:text-subtle"
                             placeholder="Masukkan judul artikel..."
                             value={form.data.title}
                             onChange={e => form.setData('title', e.target.value)}
@@ -61,7 +61,7 @@ export default function ArtikelForm({ article }) {
                     <div>
                         <label className="block text-label-md text-muted mb-1.5 font-medium">Isi Artikel *</label>
                         <textarea
-                            className="w-full px-4 py-3 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-bg resize-y min-h-[320px] placeholder:text-subtle"
+                            className="w-full px-4 py-3 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface resize-y min-h-[320px] placeholder:text-subtle"
                             placeholder="Tulis isi artikel di sini..."
                             value={form.data.content}
                             onChange={e => form.setData('content', e.target.value)}

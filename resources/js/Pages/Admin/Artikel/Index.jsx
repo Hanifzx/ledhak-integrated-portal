@@ -121,16 +121,16 @@ export default function ArtikelIndex({ articles, filters }) {
                 <div className="hidden sm:block bg-surface rounded-xl border border-border-base shadow-card overflow-x-auto">
                     <table className="w-full border-collapse">
                         <thead>
-                            <tr className="border-b border-border-base bg-bg">
-                                <th className="py-3 px-5 text-label-caps text-muted text-left">Judul</th>
-                                <th className="py-3 px-5 text-label-caps text-muted text-left w-32">Status</th>
-                                <th className="py-3 px-5 text-label-caps text-muted text-left w-36">Terakhir Diperbarui</th>
-                                <th className="py-3 px-5 text-label-caps text-muted text-right w-32">Aksi</th>
+                            <tr className="border-b border-border-base bg-surface">
+                                <th className="py-3 px-5 text-body-sm font-bold text-ink text-left">Judul</th>
+                                <th className="py-3 px-5 text-body-sm font-bold text-ink text-left w-32">Status</th>
+                                <th className="py-3 px-5 text-body-sm font-bold text-ink text-left w-36">Terakhir Diperbarui</th>
+                                <th className="py-3 px-5 text-body-sm font-bold text-ink text-right w-32">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border-base">
                             {articles?.data?.length > 0 ? articles.data.map((article) => (
-                                <tr key={article.id} className="hover:bg-bg transition-colors group">
+                                <tr key={article.id} className="transition-colors group">
                                     <td className="py-3 px-5">
                                         <p className="text-body-sm font-semibold text-ink group-hover:text-primary transition-colors">{article.title}</p>
                                         <p className="text-label-md text-subtle mt-0.5">/{article.slug}</p>

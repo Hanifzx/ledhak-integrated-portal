@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, usePage, useForm } from '@inertiajs/react';
 import { Toaster } from '@/Components/ui/sonner';
+import ConfirmAction from '@/Components/Admin/ConfirmAction';
 import { toastSuccess, toastError, toastInfo } from '@/Utils/toast';
 
 const navItems = [
@@ -83,14 +84,14 @@ function SidebarNavLink({ routeName, icon, label, onClick }) {
         <Link
             href={href}
             onClick={onClick}
-            className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-body-sm font-medium transition-colors duration-150 ${
+            className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-body-sm transition-colors duration-150 ${
                 isActive
-                    ? 'bg-primary text-on-primary font-semibold'
-                    : 'text-muted hover:bg-surface-mid hover:text-ink'
+                    ? 'bg-surface text-primary font-bold shadow-sm'
+                    : 'text-white hover:bg-white/15 font-medium'
             }`}
         >
-            <span className="material-symbols-outlined text-[20px]">{icon}</span>
-            {label}
+            <span className={`material-symbols-outlined text-[20px] ${isActive ? 'text-primary' : 'text-white'}`}>{icon}</span>
+            <span className={isActive ? 'text-primary font-bold' : 'text-white'}>{label}</span>
         </Link>
     );
 }
@@ -100,6 +101,7 @@ export default function AdminLayout({ children, title = '' }) {
     const { auth, flash } = usePage().props;
     const { post } = useForm();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
 
     // Auto-display flash messages from Laravel controllers
     useEffect(() => {
@@ -132,16 +134,16 @@ export default function AdminLayout({ children, title = '' }) {
     const SidebarContent = ({ onLinkClick }) => (
         <>
             {/* Brand */}
-            <div className="px-6 pt-5 pb-4 border-b border-border-base flex-shrink-0">
+            <div className="px-6 pt-5 pb-4 border-b-2 border-white/30 flex-shrink-0">
                 <div className="flex items-center gap-3">
                     <img
                         src="/images/logo/logo LeDHaK UNHAS.webp"
                         alt="Logo LeDHaK UNHAS"
-                        className="w-10 h-10 lg:w-12 lg:h-12 object-contain flex-shrink-0"
+                        className="w-11 h-11 lg:w-12 lg:h-12 object-contain flex-shrink-0 drop-shadow-sm"
                     />
-                    <div>
-                        <p className="text-body-md lg:text-h3 text-ink leading-none font-bold">LeDHaK UNHAS</p>
-                        <p className="text-label-caps text-muted mt-1">Inventory Portal</p>
+                    <div className="flex flex-col justify-center">
+                        <p className="text-body-md lg:text-h3 text-white leading-none font-bold tracking-tight">LeDHaK UNHAS</p>
+                        <p className="text-label-caps text-white mt-1 leading-none font-medium">Inventory Portal</p>
                     </div>
                 </div>
             </div>
@@ -154,25 +156,24 @@ export default function AdminLayout({ children, title = '' }) {
             </nav>
 
             {/* User + Logout */}
-            <div className="px-4 py-4 border-t border-border-base flex-shrink-0">
+            <div className="px-4 py-4 border-t-2 border-white/30 flex-shrink-0">
                 <div className="flex items-center gap-3 px-2 mb-3">
-                    <div className="w-8 h-8 rounded-full bg-surface-mid flex items-center justify-center flex-shrink-0">
-                        <span className="material-symbols-outlined text-muted text-[18px]">person</span>
+                    <div className="w-8 h-8 rounded-full bg-white/20 text-white flex items-center justify-center flex-shrink-0">
+                        <span className="material-symbols-outlined text-white text-[18px]">person</span>
                     </div>
                     <div className="min-w-0">
-                        <p className="text-body-sm font-semibold text-ink truncate">{auth?.user?.name ?? 'Admin'}</p>
-                        <p className="text-label-caps text-subtle truncate">{auth?.user?.email ?? ''}</p>
+                        <p className="text-body-sm font-semibold text-white truncate">{auth?.user?.name ?? 'Admin'}</p>
+                        <p className="text-label-caps text-white truncate mt-0.5 font-medium">{auth?.user?.email ?? ''}</p>
                     </div>
                 </div>
-                <form onSubmit={handleLogout}>
-                    <button
-                        type="submit"
-                        className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-body-sm text-muted hover:bg-status-err-bg hover:text-status-err transition-colors"
-                    >
-                        <span className="material-symbols-outlined text-[18px]">logout</span>
-                        Keluar
-                    </button>
-                </form>
+                <button
+                    type="button"
+                    onClick={() => setLogoutConfirmOpen(true)}
+                    className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-body-sm text-white hover:bg-white/15 transition-colors font-medium"
+                >
+                    <span className="material-symbols-outlined text-[18px] text-white">logout</span>
+                    Keluar
+                </button>
             </div>
         </>
     );
@@ -181,7 +182,7 @@ export default function AdminLayout({ children, title = '' }) {
         <div className="flex min-h-screen bg-bg">
 
             {/* ── DESKTOP SIDEBAR (lg+) ── */}
-            <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-[260px] bg-surface border-r border-border-base flex-col z-50">
+            <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-[260px] bg-primary border-r border-primary-dark flex-col z-50 rounded-tr-2xl rounded-br-3xl">
                 <SidebarContent onLinkClick={() => {}} />
             </aside>
 
@@ -194,11 +195,11 @@ export default function AdminLayout({ children, title = '' }) {
                         onClick={() => setSidebarOpen(false)}
                     />
                     {/* Drawer */}
-                    <aside className="relative w-[280px] max-w-[85vw] h-full bg-surface flex flex-col shadow-2xl animate-slide-in-left">
+                    <aside className="relative w-[280px] max-w-[85vw] h-full bg-primary flex flex-col shadow-2xl animate-slide-in-left rounded-tr-2xl rounded-br-3xl">
                         {/* Close button */}
                         <button
                             onClick={() => setSidebarOpen(false)}
-                            className="absolute top-4 right-4 p-1.5 rounded-lg text-muted hover:bg-surface-mid hover:text-ink transition-colors"
+                            className="absolute top-4 right-4 p-1.5 rounded-lg text-white/80 hover:bg-white/10 hover:text-white transition-colors"
                             aria-label="Tutup menu"
                         >
                             <span className="material-symbols-outlined text-[20px]">close</span>
@@ -225,7 +226,19 @@ export default function AdminLayout({ children, title = '' }) {
                 </div>
             </nav>
 
-
+            <ConfirmAction
+                open={logoutConfirmOpen}
+                onOpenChange={setLogoutConfirmOpen}
+                onConfirm={() => {
+                    setLogoutConfirmOpen(false);
+                    post(route('logout'));
+                }}
+                title="Keluar dari Akun?"
+                description="Anda akan keluar dari sesi admin portal inventaris LeDHaK UNHAS."
+                confirmText="Ya, Keluar"
+                cancelText="Batal"
+                variant="destructive"
+            />
 
             <Toaster />
         </div>
