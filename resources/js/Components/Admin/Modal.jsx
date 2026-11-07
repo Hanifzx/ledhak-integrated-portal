@@ -14,6 +14,13 @@ function useIsDesktop() {
     return isDesktop;
 }
 
+/** Variants untuk outer wrapper agar AnimatePresence menunggu exit animation selesai sebelum unmount */
+const wrapperVariants = {
+    hidden:  { opacity: 0 },
+    visible: { opacity: 1 },
+    exit:    { opacity: 0, transition: { duration: 0.3, ease: 'easeIn' } },
+};
+
 /** Variants untuk backdrop */
 const backdropVariants = {
     hidden:  { opacity: 0 },
@@ -21,7 +28,7 @@ const backdropVariants = {
     exit:    { opacity: 0, transition: { duration: 0.2,  ease: 'easeIn'  } },
 };
 
-/** Mobile: slide up dari bawah */
+/** Mobile: slide up dari bawah saat masuk, slide down ke bawah saat keluar */
 const mobileVariants = {
     hidden:  { y: '100%', opacity: 0 },
     visible: { y: 0, opacity: 1, transition: { duration: 0.35, ease: [0.32, 0.72, 0, 1] } },
@@ -30,9 +37,9 @@ const mobileVariants = {
 
 /** Desktop: scale + fade dari tengah */
 const desktopVariants = {
-    hidden:  { scale: 0.94, opacity: 0, y: -6 },
-    visible: { scale: 1,    opacity: 1, y: 0,  transition: { duration: 0.25, ease: [0.16, 1, 0.3, 1] } },
-    exit:    { scale: 0.94, opacity: 0, y: -6, transition: { duration: 0.2,  ease: 'easeIn' } },
+    hidden:  { scale: 0.95, opacity: 0, y: 8 },
+    visible: { scale: 1,    opacity: 1, y: 0,  transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] } },
+    exit:    { scale: 0.95, opacity: 0, y: 8, transition: { duration: 0.2,  ease: 'easeIn' } },
 };
 
 export default function Modal({ show, title, onClose, children, size = 'md' }) {
@@ -49,24 +56,18 @@ export default function Modal({ show, title, onClose, children, size = 'md' }) {
     return (
         <AnimatePresence>
             {show && (
-                /*
-                 * PENTING: outer wrapper HARUS motion.div agar AnimatePresence
-                 * tahu kapan harus menunggu exit animation sebelum unmount.
-                 * Wrapper sendiri tidak bergerak — hanya backdrop & panel yang animasi.
-                 */
                 <motion.div
                     key="modal-root"
                     className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
                     style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 5rem)' }}
-                    /* Wrapper tidak punya animasi sendiri, tapi exit-nya harus ada
-                       agar AnimatePresence menunggu children selesai exit */
+                    variants={wrapperVariants}
                     initial="hidden"
                     animate="visible"
                     exit="exit"
                 >
                     {/* Backdrop */}
                     <motion.div
-                        className="absolute inset-0 bg-ink/80 backdrop-blur-sm"
+                        className="absolute inset-0 bg-black/50"
                         variants={backdropVariants}
                         onClick={onClose}
                     />

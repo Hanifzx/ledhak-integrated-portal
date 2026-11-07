@@ -9,6 +9,7 @@ function Toaster(props) {
             toastOptions={{
                 classNames: {
                     toast: 'font-sans',
+                    closeButton: '!left-auto !right-0 !translate-x-[35%] !translate-y-[-35%]',
                 },
             }}
             {...props}
