@@ -9,7 +9,7 @@ use Inertia\Inertia;
 
 class PublicItemController extends Controller
 {
-    public function show($hash)
+    public function show(string $hash)
     {
         $decoded = base64_decode(str_replace(['-', '_'], ['+', '/'], $hash));
         if (!$decoded || !str_starts_with($decoded, 'LEDHAK|')) {
@@ -25,7 +25,7 @@ class PublicItemController extends Controller
 
         $itemData = array_merge($item->toArray(), [
             'photo_url' => $item->photo_path 
-                ? Storage::disk('public')->url($item->photo_path) 
+                ? asset('storage/' . $item->photo_path) 
                 : null,
             'active_loan_id' => $activeLoan ? $activeLoan->id : null,
         ]);
