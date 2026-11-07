@@ -63,6 +63,11 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::patch('/pengaturan/profile', [PengaturanController::class, 'updateProfile'])->name('pengaturan.profile');
     Route::post('/pengaturan/password', [PengaturanController::class, 'updatePassword'])->name('pengaturan.password');
 
+    // Manajemen Admin (User Management)
+    Route::post('/pengaturan/admin', [PengaturanController::class, 'storeAdmin'])->name('pengaturan.admin.store');
+    Route::post('/pengaturan/admin/{user}/reset-password', [PengaturanController::class, 'resetAdminPassword'])->name('pengaturan.admin.reset-password');
+    Route::delete('/pengaturan/admin/{user}', [PengaturanController::class, 'destroyAdmin'])->name('pengaturan.admin.destroy');
+
     // Profile (bawaan Breeze — tidak lagi dipakai, tetapi dipertahankan untuk kompatibilitas)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

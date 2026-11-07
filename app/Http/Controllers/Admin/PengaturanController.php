@@ -3,8 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Item;
-use App\Models\LoanRecord;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -18,16 +17,24 @@ class PengaturanController extends Controller
         /** @var \App\Models\User $user */
         $user = $request->user();
 
+        $admins = User::orderBy('created_at', 'asc')
+            ->get()
+            ->map(fn($u) => [
+                'id'         => $u->id,
+                'name'       => $u->name,
+                'email'      => $u->email,
+                'created_at' => $u->created_at?->toDateString(),
+                'is_self'    => $u->id === $user->id,
+            ]);
+
         return Inertia::render('Admin/Pengaturan/Index', [
             'user' => [
                 'name'  => $user->name,
                 'email' => $user->email,
             ],
+            'admins' => $admins,
             'google_sheets_url' => config('services.google_apps_script.url', env('GOOGLE_APPS_SCRIPT_URL', '')),
             'system_info' => [
-                'total_items'   => Item::count(),
-                'total_loans'   => LoanRecord::count(),
-                'active_loans'  => LoanRecord::where('status', 'Active')->count(),
                 'laravel_version' => app()->version(),
                 'php_version'     => PHP_VERSION,
             ],
@@ -55,18 +62,61 @@ class PengaturanController extends Controller
         $user = $request->user();
 
         $request->validate([
-            'current_password' => 'required',
-            'password'         => ['required', 'confirmed', Password::min(8)],
+            'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
         ]);
-
-        if (! Hash::check($request->current_password, $user->password)) {
-            return back()->withErrors(['current_password' => 'Password saat ini tidak sesuai.']);
-        }
 
         $user->update([
             'password' => Hash::make($request->password),
         ]);
 
         return back()->with('success', 'Password berhasil diperbarui.');
+    }
+
+    public function storeAdmin(Request $request)
+    {
+        $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email',
+            'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
+        ]);
+
+        User::create([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
+        return back()->with('success', 'Akun admin "' . $request->name . '" berhasil dibuat.');
+    }
+
+    public function resetAdminPassword(Request $request, User $user)
+    {
+        $request->validate([
+            'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
+        ]);
+
+        $user->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        return back()->with('success', 'Password akun "' . $user->name . '" berhasil direset.');
+    }
+
+    public function destroyAdmin(Request $request, User $user)
+    {
+        // Guard: tidak boleh hapus akun sendiri
+        if ($user->id === Auth::id()) {
+            return back()->withErrors(['delete' => 'Anda tidak dapat menghapus akun Anda sendiri.']);
+        }
+
+        // Guard: minimal harus tersisa 1 admin
+        if (User::count() <= 1) {
+            return back()->withErrors(['delete' => 'Tidak dapat menghapus admin terakhir.']);
+        }
+
+        $name = $user->name;
+        $user->delete();
+
+        return back()->with('success', 'Akun admin "' . $name . '" telah dihapus.');
     }
 }
