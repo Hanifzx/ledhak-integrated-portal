@@ -211,8 +211,8 @@ export default function AdminLayout({ children, title = '' }) {
 
             {/* ── MAIN CONTENT ── */}
             <div className="flex-1 lg:ml-[260px] flex flex-col min-h-screen">
-                {/* Page content — extra bottom padding on mobile so bottom nav doesn't cover content */}
-                <main className="flex-1 p-4 lg:p-6 lg:pb-6" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 5rem)' }}>
+                {/* Page content with safe-area spacing and mobile bottom-nav padding */}
+                <main className="flex-1 main-content-layout">
                     {children}
                 </main>
             </div>

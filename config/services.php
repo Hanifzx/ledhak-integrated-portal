@@ -37,6 +37,7 @@ return [
 
     'google_apps_script' => [
         'url' => env('GOOGLE_APPS_SCRIPT_URL'),
+        'view_url' => env('GOOGLE_SHEETS_VIEW_URL', 'https://docs.google.com/spreadsheets/d/12ADRxZIajrQwv8Xh1OcO2pWsZ878nqAI1F_Odrrfnw8/edit?gid=0#gid=0'),
     ],
 
 ];

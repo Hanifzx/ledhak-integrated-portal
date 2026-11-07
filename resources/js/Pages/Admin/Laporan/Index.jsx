@@ -49,7 +49,7 @@ export default function LaporanIndex({ logs, filters, total }) {
                     }
                     action={
                         <a
-                            href={config?.google_sheets_view_url || '#'}
+                            href={config?.google_sheets_view_url || 'https://docs.google.com/spreadsheets/d/12ADRxZIajrQwv8Xh1OcO2pWsZ878nqAI1F_Odrrfnw8/edit?gid=0#gid=0'}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#0f9d58] text-white rounded-lg text-body-sm font-semibold hover:bg-[#0b8043] transition-colors shadow-sm flex-shrink-0"
@@ -68,7 +68,8 @@ export default function LaporanIndex({ logs, filters, total }) {
                             <div className="relative">
                                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-subtle text-[18px]">search</span>
                                 <input
-                                    className="w-full pl-9 pr-3 py-2 rounded-lg border border-border-base bg-surface text-body-md text-ink placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-primary"
+                                    type="text"
+                                    className="w-full pl-9 pr-3 py-2 rounded-lg border border-border-base bg-surface text-body-md text-ink placeholder:text-subtle focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                                     placeholder="Aksi, item, atau pengguna..."
                                     value={search}
                                     onChange={e => setSearch(e.target.value)}
@@ -80,14 +81,14 @@ export default function LaporanIndex({ logs, filters, total }) {
                             <div>
                                 <label className="block text-body-sm font-semibold text-ink mb-1">Dari Tanggal</label>
                                 <input type="date"
-                                    className="w-full sm:w-auto px-3 py-2 rounded-lg border border-border-base bg-surface text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary"
+                                    className="w-full sm:w-auto px-3 py-2 rounded-lg border border-border-base bg-surface text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                                     value={dateFrom} onChange={e => setDateFrom(e.target.value)}
                                 />
                             </div>
                             <div>
                                 <label className="block text-body-sm font-semibold text-ink mb-1">Sampai Tanggal</label>
                                 <input type="date"
-                                    className="w-full sm:w-auto px-3 py-2 rounded-lg border border-border-base bg-surface text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary"
+                                    className="w-full sm:w-auto px-3 py-2 rounded-lg border border-border-base bg-surface text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                                     value={dateTo} onChange={e => setDateTo(e.target.value)}
                                 />
                             </div>

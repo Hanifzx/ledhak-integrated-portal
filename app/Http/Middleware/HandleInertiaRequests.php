@@ -36,7 +36,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'config' => [
-                'google_sheets_view_url' => env('GOOGLE_SHEETS_VIEW_URL'),
+                'google_sheets_view_url' => config('services.google_apps_script.view_url', env('GOOGLE_SHEETS_VIEW_URL', 'https://docs.google.com/spreadsheets/d/12ADRxZIajrQwv8Xh1OcO2pWsZ878nqAI1F_Odrrfnw8/edit?gid=0#gid=0')),
             ],
             'ziggy' => fn () => [
                 ...(new Ziggy)->toArray(),

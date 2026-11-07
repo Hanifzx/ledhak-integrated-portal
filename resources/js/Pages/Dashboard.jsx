@@ -4,7 +4,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import StatusBadge from '@/Components/Admin/StatusBadge';
 import Modal from '@/Components/Admin/Modal';
 import { PageHeader } from '@/Components/Admin/AdminUI';
-import { toastSuccess, toastError, TOAST_MESSAGES } from '@/Utils/toast';
+import { toastSuccess, toastError, toastInfo, TOAST_MESSAGES } from '@/Utils/toast';
 
 const DEFAULT_PHOTO = '/images/assets/item_default.webp';
 const STATUS_OPTIONS = ['Tersedia', 'Dipinjam', 'Perbaikan'];
@@ -92,7 +92,7 @@ function QuickAddItemModal({ show, onClose }) {
                 <div>
                     <label className="block text-label-md text-muted mb-1">Nama Barang *</label>
                     <input
-                        className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
+                        className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface"
                         value={form.data.name} onChange={e => form.setData('name', e.target.value)} required
                     />
                     {form.errors.name && <p className="text-label-md text-status-err mt-1">{form.errors.name}</p>}
@@ -100,7 +100,7 @@ function QuickAddItemModal({ show, onClose }) {
                 <div>
                     <label className="block text-label-md text-muted mb-1">Kode Barang (opsional)</label>
                     <input
-                        className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface font-mono"
+                        className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface font-mono"
                         value={form.data.item_code} onChange={e => form.setData('item_code', e.target.value)}
                         placeholder="Auto-generate jika kosong"
                     />
@@ -109,7 +109,7 @@ function QuickAddItemModal({ show, onClose }) {
                     <div>
                         <label className="block text-label-md text-muted mb-1">Kategori *</label>
                         <select
-                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
+                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface"
                             value={form.data.category} onChange={e => form.setData('category', e.target.value)} required
                         >
                             <option value="">Pilih kategori</option>
@@ -120,7 +120,7 @@ function QuickAddItemModal({ show, onClose }) {
                     <div>
                         <label className="block text-label-md text-muted mb-1">Status *</label>
                         <select
-                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
+                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface"
                             value={form.data.status} onChange={e => form.setData('status', e.target.value)}
                         >
                             {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
@@ -130,7 +130,7 @@ function QuickAddItemModal({ show, onClose }) {
                 <div>
                     <label className="block text-label-md text-muted mb-1">Deskripsi</label>
                     <textarea
-                        className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface resize-none"
+                        className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface resize-none"
                         rows={3} value={form.data.description} onChange={e => form.setData('description', e.target.value)}
                     />
                 </div>
@@ -175,6 +175,12 @@ function MetricCard({ icon, label, value, sub, subClass = 'text-muted' }) {
 
 export default function Dashboard({ metrics, overdue_loans, recent_logs, draft_articles }) {
     const [showAddModal, setShowAddModal] = useState(false);
+
+    const handleArtikelUnavailable = (e) => {
+        e?.preventDefault?.();
+        toastInfo('Fitur Belum Tersedia', 'Fitur publikasi dan pengelolaan artikel saat ini masih dalam tahap pengembangan.');
+    };
+
     return (
         <AdminLayout title="Beranda">
             <Head title="Dashboard" />
@@ -260,13 +266,14 @@ export default function Dashboard({ metrics, overdue_loans, recent_logs, draft_a
                             <span className="material-symbols-outlined text-[18px]">add_box</span>
                             Tambah Barang Baru
                         </button>
-                        <Link
-                            href={route('admin.artikel.create')}
+                        <button
+                            type="button"
+                            onClick={handleArtikelUnavailable}
                             className="w-full py-3 px-4 border-2 border-primary text-primary rounded-lg text-body-sm font-semibold flex items-center justify-center gap-2 hover:bg-primary-soft transition-colors"
                         >
                             <span className="material-symbols-outlined text-[18px]">edit_document</span>
                             Tulis Artikel Baru
-                        </Link>
+                        </button>
                     </div>
                 </div>
 
@@ -308,12 +315,14 @@ export default function Dashboard({ metrics, overdue_loans, recent_logs, draft_a
                                         <p className="text-body-sm font-semibold text-ink truncate">{art.title}</p>
                                         <p className="text-label-md text-muted mt-0.5">Draft · {art.updated_at_diff}</p>
                                     </div>
-                                    <Link
-                                        href={route('admin.artikel.edit', art.id)}
+                                    <button
+                                        type="button"
+                                        onClick={handleArtikelUnavailable}
                                         className="ml-3 p-1.5 text-subtle hover:text-primary rounded-lg hover:bg-primary-soft transition-colors flex-shrink-0"
+                                        title="Fitur dalam tahap pengembangan"
                                     >
                                         <span className="material-symbols-outlined text-[18px]">edit</span>
-                                    </Link>
+                                    </button>
                                 </div>
                             )) : (
                                 <p className="text-body-sm text-muted">Tidak ada draft artikel.</p>

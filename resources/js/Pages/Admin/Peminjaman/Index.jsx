@@ -90,7 +90,7 @@ function LoanForm({ show, onClose, items_available, initialItemId }) {
                     <div>
                         <label className="block text-label-md text-muted mb-1">Barang *</label>
                         <select
-                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
+                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface"
                             value={form.data.item_id}
                             onChange={e => form.setData('item_id', e.target.value)}
                             required
@@ -106,7 +106,7 @@ function LoanForm({ show, onClose, items_available, initialItemId }) {
                         <div>
                             <label className="block text-label-md text-muted mb-1">Nama Peminjam *</label>
                             <input
-                                className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
+                                className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface"
                                 value={form.data.borrower_name}
                                 onChange={e => form.setData('borrower_name', e.target.value)}
                                 required
@@ -116,7 +116,7 @@ function LoanForm({ show, onClose, items_available, initialItemId }) {
                         <div>
                             <label className="block text-label-md text-muted mb-1">No. WhatsApp *</label>
                             <input
-                                className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
+                                className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface"
                                 type="tel"
                                 value={form.data.borrower_phone}
                                 onChange={e => form.setData('borrower_phone', e.target.value)}

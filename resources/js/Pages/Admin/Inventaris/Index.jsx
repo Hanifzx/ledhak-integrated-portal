@@ -118,7 +118,7 @@ function ItemForm({ show, form, onPhotoChange, photoPreview, onSubmit, onClose, 
                     <div>
                         <label className="block text-label-md text-muted mb-1">Nama Barang *</label>
                         <input
-                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-surface"
+                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface"
                             value={form.data.name}
                             onChange={e => form.setData('name', e.target.value)}
                             required
@@ -129,7 +129,7 @@ function ItemForm({ show, form, onPhotoChange, photoPreview, onSubmit, onClose, 
                         <div>
                             <label className="block text-label-md text-muted mb-1">Kategori *</label>
                             <select
-                                className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
+                                className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface"
                                 value={form.data.category}
                                 onChange={e => form.setData('category', e.target.value)}
                                 required
@@ -142,7 +142,7 @@ function ItemForm({ show, form, onPhotoChange, photoPreview, onSubmit, onClose, 
                         <div>
                             <label className="block text-label-md text-muted mb-1">Status *</label>
                             <select
-                                className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
+                                className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface"
                                 value={form.data.status}
                                 onChange={e => form.setData('status', e.target.value)}
                             >
@@ -153,7 +153,7 @@ function ItemForm({ show, form, onPhotoChange, photoPreview, onSubmit, onClose, 
                     <div>
                         <label className="block text-label-md text-muted mb-1">Deskripsi</label>
                         <textarea
-                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface resize-none"
+                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface resize-none"
                             rows={3}
                             value={form.data.description}
                             onChange={e => form.setData('description', e.target.value)}
@@ -230,7 +230,7 @@ function StatusModal({ show, item, onClose }) {
                     <div>
                         <label className="block text-label-md text-muted mb-1">Status Baru *</label>
                         <select
-                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
+                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface"
                             value={form.data.status}
                             onChange={e => form.setData('status', e.target.value)}
                         >
@@ -243,7 +243,7 @@ function StatusModal({ show, item, onClose }) {
                             Catatan {isDipinjam && <span className="text-status-err">*</span>}
                         </label>
                         <input
-                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
+                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface"
                             value={form.data.notes}
                             onChange={e => form.setData('notes', e.target.value)}
                             placeholder={isDipinjam ? 'Wajib: jelaskan kejadian yang terjadi...' : 'Alasan perubahan status...'}

@@ -9,11 +9,11 @@ import { Link } from '@inertiajs/react';
 // ── CSS class constants ────────────────────────────────────────────────────
 export const INPUT_CLS =
     'w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink ' +
-    'focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-surface';
+    'focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface';
 
 export const SELECT_CLS =
     'w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink ' +
-    'focus:outline-none focus:ring-2 focus:ring-primary bg-surface';
+    'focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface';
 
 // ── Breadcrumb ─────────────────────────────────────────────────────────────
 /**
@@ -110,7 +110,8 @@ export function SearchInput({ value, onChange, placeholder = 'Cari...' }) {
                 search
             </span>
             <input
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border-base bg-surface text-body-md text-ink placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-primary"
+                type="text"
+                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border-base bg-surface text-body-md text-ink placeholder:text-subtle focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 placeholder={placeholder}
                 value={value}
                 onChange={onChange}

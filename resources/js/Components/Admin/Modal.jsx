@@ -59,7 +59,6 @@ export default function Modal({ show, title, onClose, children, size = 'md' }) {
                 <motion.div
                     key="modal-root"
                     className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
-                    style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 5rem)' }}
                     variants={wrapperVariants}
                     initial="hidden"
                     animate="visible"
@@ -67,20 +66,23 @@ export default function Modal({ show, title, onClose, children, size = 'md' }) {
                 >
                     {/* Backdrop */}
                     <motion.div
-                        className="absolute inset-0 bg-black/50"
+                        className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
                         variants={backdropVariants}
                         onClick={onClose}
                     />
 
                     {/* Dialog panel */}
                     <motion.div
-                        className={`relative w-full ${sizeClass} bg-surface shadow-card-hover border border-border-base flex flex-col
-                            rounded-t-2xl sm:rounded-xl
-                            min-h-[55dvh] sm:min-h-0
-                            max-h-[calc(100dvh-6rem)] sm:max-h-[90vh]
+                        className={`relative w-full ${sizeClass} bg-surface shadow-2xl border-t sm:border border-border-base flex flex-col
+                            rounded-t-3xl sm:rounded-2xl
+                            max-h-[92dvh] sm:max-h-[88vh]
+                            pb-[max(1rem,env(safe-area-inset-bottom,0px))] sm:pb-0
                         `}
                         variants={panelVariants}
                     >
+                        {/* Mobile handle indicator */}
+                        <div className="sm:hidden w-10 h-1 bg-border-strong/60 rounded-full mx-auto mt-3 -mb-1 flex-shrink-0" />
+
                         {/* Header */}
                         <div className="flex items-center justify-between px-5 py-4 border-b border-border-base flex-shrink-0">
                             <h2 className="text-body-md sm:text-h3 text-ink font-semibold">{title}</h2>

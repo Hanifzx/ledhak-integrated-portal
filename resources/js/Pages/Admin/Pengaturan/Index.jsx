@@ -822,7 +822,7 @@ export default function PengaturanIndex({ user, system_info, google_sheets_url, 
                                         <p className="text-body-sm font-semibold text-ink">Application Version</p>
                                         <p className="text-label-md text-muted">LeDHaK Inventory Portal</p>
                                     </div>
-                                    <span className="font-mono text-body-sm text-primary font-bold bg-primary-soft border border-primary/20 px-3 py-1 rounded-lg">
+                                    <span className="font-mono text-body-sm text-ink font-medium bg-surface border border-border-base px-3 py-1 rounded-lg">
                                         v1.0
                                     </span>
                                 </div>
@@ -831,7 +831,7 @@ export default function PengaturanIndex({ user, system_info, google_sheets_url, 
                                         <p className="text-body-sm font-semibold text-ink">Versi Laravel</p>
                                         <p className="text-label-md text-muted">Framework backend</p>
                                     </div>
-                                    <span className="font-mono text-body-sm text-primary font-semibold bg-primary-soft px-3 py-1 rounded-lg">
+                                    <span className="font-mono text-body-sm text-ink font-medium bg-surface border border-border-base px-3 py-1 rounded-lg">
                                         v{system_info?.laravel_version}
                                     </span>
                                 </div>
