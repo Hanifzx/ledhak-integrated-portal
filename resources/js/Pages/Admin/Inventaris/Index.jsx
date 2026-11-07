@@ -5,6 +5,7 @@ import StatusBadge from '@/Components/Admin/StatusBadge';
 import Modal from '@/Components/Admin/Modal';
 import Pagination from '@/Components/Admin/Pagination';
 import ConfirmAction from '@/Components/Admin/ConfirmAction';
+import CustomSelect from '@/Components/Admin/CustomSelect';
 import { PageHeader, SearchInput } from '@/Components/Admin/AdminUI';
 import { useDebounce } from '@/Utils/debounce';
 import { toastMsg, toastFailed } from '@/Utils/toast';
@@ -128,26 +129,24 @@ function ItemForm({ show, form, onPhotoChange, photoPreview, onSubmit, onClose, 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="block text-label-md text-muted mb-1">Kategori *</label>
-                            <select
-                                className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface"
+                            <CustomSelect
                                 value={form.data.category}
-                                onChange={e => form.setData('category', e.target.value)}
+                                onChange={val => form.setData('category', val)}
+                                options={CATEGORY_OPTIONS}
+                                placeholder="Pilih kategori"
                                 required
-                            >
-                                <option value="">Pilih kategori</option>
-                                {CATEGORY_OPTIONS.map(c => <option key={c}>{c}</option>)}
-                            </select>
+                            />
                             {form.errors.category && <p className="text-label-md text-status-err mt-1">{form.errors.category}</p>}
                         </div>
                         <div>
                             <label className="block text-label-md text-muted mb-1">Status *</label>
-                            <select
-                                className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface"
+                            <CustomSelect
                                 value={form.data.status}
-                                onChange={e => form.setData('status', e.target.value)}
-                            >
-                                {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
-                            </select>
+                                onChange={val => form.setData('status', val)}
+                                options={STATUS_OPTIONS}
+                                placeholder="Pilih status"
+                                required
+                            />
                         </div>
                     </div>
                     <div>
@@ -229,13 +228,13 @@ function StatusModal({ show, item, onClose }) {
 
                     <div>
                         <label className="block text-label-md text-muted mb-1">Status Baru *</label>
-                        <select
-                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface"
+                        <CustomSelect
                             value={form.data.status}
-                            onChange={e => form.setData('status', e.target.value)}
-                        >
-                            {options.map(s => <option key={s}>{s}</option>)}
-                        </select>
+                            onChange={val => form.setData('status', val)}
+                            options={options}
+                            placeholder="Pilih status baru"
+                            required
+                        />
                         {form.errors.status && <p className="text-label-md text-status-err mt-1">{form.errors.status}</p>}
                     </div>
                     <div>

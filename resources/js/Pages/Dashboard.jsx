@@ -3,6 +3,7 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import StatusBadge from '@/Components/Admin/StatusBadge';
 import Modal from '@/Components/Admin/Modal';
+import CustomSelect from '@/Components/Admin/CustomSelect';
 import { PageHeader } from '@/Components/Admin/AdminUI';
 import { toastSuccess, toastError, toastInfo, TOAST_MESSAGES } from '@/Utils/toast';
 
@@ -108,23 +109,24 @@ function QuickAddItemModal({ show, onClose }) {
                 <div className="grid grid-cols-2 gap-3">
                     <div>
                         <label className="block text-label-md text-muted mb-1">Kategori *</label>
-                        <select
-                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface"
-                            value={form.data.category} onChange={e => form.setData('category', e.target.value)} required
-                        >
-                            <option value="">Pilih kategori</option>
-                            {CATEGORY_OPTIONS.map(c => <option key={c}>{c}</option>)}
-                        </select>
+                        <CustomSelect
+                            value={form.data.category}
+                            onChange={val => form.setData('category', val)}
+                            options={CATEGORY_OPTIONS}
+                            placeholder="Pilih kategori"
+                            required
+                        />
                         {form.errors.category && <p className="text-label-md text-status-err mt-1">{form.errors.category}</p>}
                     </div>
                     <div>
                         <label className="block text-label-md text-muted mb-1">Status *</label>
-                        <select
-                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface"
-                            value={form.data.status} onChange={e => form.setData('status', e.target.value)}
-                        >
-                            {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
-                        </select>
+                        <CustomSelect
+                            value={form.data.status}
+                            onChange={val => form.setData('status', val)}
+                            options={STATUS_OPTIONS}
+                            placeholder="Pilih status"
+                            required
+                        />
                     </div>
                 </div>
                 <div>

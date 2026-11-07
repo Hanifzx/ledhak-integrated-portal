@@ -33,7 +33,7 @@ class PengaturanController extends Controller
                 'email' => $user->email,
             ],
             'admins' => $admins,
-            'google_sheets_url' => config('services.google_apps_script.url', env('GOOGLE_APPS_SCRIPT_URL', '')),
+            'google_sheets_url' => config('services.google_apps_script.url') ?: env('GOOGLE_APPS_SCRIPT_URL', 'https://script.google.com/macros/s/AKfycby9tsg7OPznFfsmvEqBO8U3_4M31iQKQEgM1_yVhKREhjyiAUYmiZKtUJfIe0kUV8cDmg/exec'),
             'system_info' => [
                 'laravel_version' => app()->version(),
                 'php_version'     => PHP_VERSION,

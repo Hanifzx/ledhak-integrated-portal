@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import Pagination from '@/Components/Admin/Pagination';
+import DatePicker from '@/Components/Admin/DatePicker';
 import { PageHeader } from '@/Components/Admin/AdminUI';
 
 // Action type → warna dot
@@ -77,19 +78,21 @@ export default function LaporanIndex({ logs, filters, total }) {
                                 />
                             </div>
                         </div>
-                        <div className="grid grid-cols-2 sm:flex gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-w-[280px]">
                             <div>
                                 <label className="block text-body-sm font-semibold text-ink mb-1">Dari Tanggal</label>
-                                <input type="date"
-                                    className="w-full sm:w-auto px-3 py-2 rounded-lg border border-border-base bg-surface text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                                    value={dateFrom} onChange={e => setDateFrom(e.target.value)}
+                                <DatePicker
+                                    value={dateFrom}
+                                    onChange={setDateFrom}
+                                    placeholder="Pilih tanggal mulai"
                                 />
                             </div>
                             <div>
                                 <label className="block text-body-sm font-semibold text-ink mb-1">Sampai Tanggal</label>
-                                <input type="date"
-                                    className="w-full sm:w-auto px-3 py-2 rounded-lg border border-border-base bg-surface text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                                    value={dateTo} onChange={e => setDateTo(e.target.value)}
+                                <DatePicker
+                                    value={dateTo}
+                                    onChange={setDateTo}
+                                    placeholder="Pilih tanggal akhir"
                                 />
                             </div>
                         </div>

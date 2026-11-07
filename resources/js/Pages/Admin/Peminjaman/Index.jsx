@@ -14,6 +14,8 @@ import { useDebounce } from '@/Utils/debounce';
 import { toastMsg, toastFailed } from '@/Utils/toast';
 import { format, parseISO } from 'date-fns';
 import { id } from 'date-fns/locale';
+import DatePicker from '@/Components/Admin/DatePicker';
+import CustomSelect from '@/Components/Admin/CustomSelect';
 
 const FILTER_LABELS = [
     { label: 'Semua', value: '' },
@@ -23,33 +25,6 @@ const FILTER_LABELS = [
 ];
 
 const DEFAULT_PHOTO = '/images/assets/item_default.webp';
-
-function DatePicker({ value, onChange, placeholder = "Pilih tanggal" }) {
-    const date = value ? parseISO(value) : undefined;
-    return (
-        <Popover>
-            <PopoverTrigger asChild>
-                <Button 
-                    variant="outline" 
-                    className={`w-full justify-between text-left font-normal border-border-base bg-surface text-body-md hover:bg-surface-mid ${!date ? 'text-muted' : 'text-ink'}`}
-                >
-                    {date ? format(date, "PPP", { locale: id }) : <span>{placeholder}</span>}
-                    <span className="material-symbols-outlined text-subtle text-[18px]">calendar_today</span>
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 z-[100] bg-surface bg-white shadow-card-hover" align="start" style={{ backgroundColor: 'white' }}>
-                <Calendar
-                    className="bg-surface bg-white"
-                    style={{ backgroundColor: 'white' }}
-                    mode="single"
-                    selected={date}
-                    onSelect={(d) => onChange(d ? format(d, "yyyy-MM-dd") : '')}
-                    initialFocus
-                />
-            </PopoverContent>
-        </Popover>
-    );
-}
 
 function LoanForm({ show, onClose, items_available, initialItemId }) {
     const [showAlert, setShowAlert] = useState(false);
@@ -89,17 +64,17 @@ function LoanForm({ show, onClose, items_available, initialItemId }) {
                 <form onSubmit={submit} className="space-y-4">
                     <div>
                         <label className="block text-label-md text-muted mb-1">Barang *</label>
-                        <select
-                            className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface"
+                        <CustomSelect
                             value={form.data.item_id}
-                            onChange={e => form.setData('item_id', e.target.value)}
+                            onChange={val => form.setData('item_id', val)}
+                            options={items_available?.map(item => ({
+                                value: item.id,
+                                label: `${item.item_code} — ${item.name}`
+                            })) || []}
+                            placeholder="Pilih barang tersedia..."
+                            searchable={true}
                             required
-                        >
-                            <option value="">Pilih barang tersedia...</option>
-                            {items_available?.map(item => (
-                                <option key={item.id} value={item.id}>{item.item_code} — {item.name}</option>
-                            ))}
-                        </select>
+                        />
                         {form.errors.item_id && <p className="text-label-md text-status-err mt-1">{form.errors.item_id}</p>}
                     </div>
                     <div className="grid grid-cols-2 gap-3">
@@ -109,6 +84,7 @@ function LoanForm({ show, onClose, items_available, initialItemId }) {
                                 className="w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface"
                                 value={form.data.borrower_name}
                                 onChange={e => form.setData('borrower_name', e.target.value)}
+                                placeholder="Masukkan nama"
                                 required
                             />
                             {form.errors.borrower_name && <p className="text-label-md text-status-err mt-1">{form.errors.borrower_name}</p>}
@@ -120,7 +96,7 @@ function LoanForm({ show, onClose, items_available, initialItemId }) {
                                 type="tel"
                                 value={form.data.borrower_phone}
                                 onChange={e => form.setData('borrower_phone', e.target.value)}
-                                placeholder="0812xxxx"
+                                placeholder="08xxxxxx"
                                 required
                             />
                         </div>
@@ -131,7 +107,7 @@ function LoanForm({ show, onClose, items_available, initialItemId }) {
                             <DatePicker
                                 value={form.data.loan_date}
                                 onChange={val => form.setData('loan_date', val)}
-                                placeholder="Tanggal pinjam"
+                                placeholder="Pilih tanggal"
                             />
                         </div>
                         <div>
@@ -139,7 +115,7 @@ function LoanForm({ show, onClose, items_available, initialItemId }) {
                             <DatePicker
                                 value={form.data.return_date}
                                 onChange={val => form.setData('return_date', val)}
-                                placeholder="Opsi kembali"
+                                placeholder="Pilih tanggal"
                             />
                         </div>
                     </div>

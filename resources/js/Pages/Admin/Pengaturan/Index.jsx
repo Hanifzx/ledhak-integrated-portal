@@ -846,8 +846,8 @@ export default function PengaturanIndex({ user, system_info, google_sheets_url, 
                                 </div>
                                 <div className="flex items-start justify-between py-2.5">
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-body-sm font-semibold text-ink">Google Apps Script URL</p>
-                                        <p className="text-label-md text-muted">Untuk sinkronisasi Google Sheets</p>
+                                        <p className="text-body-sm font-semibold text-ink">Google Sheets Sync</p>
+                                        <p className="text-label-md text-muted">Otomasi sinkronisasi sirkulasi peminjaman</p>
                                     </div>
                                     <span className={`ml-3 text-label-caps px-2.5 py-1 rounded-full font-bold flex-shrink-0 ${
                                         google_sheets_url

@@ -36,7 +36,7 @@ return [
     ],
 
     'google_apps_script' => [
-        'url' => env('GOOGLE_APPS_SCRIPT_URL'),
+        'url' => env('GOOGLE_APPS_SCRIPT_URL', 'https://script.google.com/macros/s/AKfycby9tsg7OPznFfsmvEqBO8U3_4M31iQKQEgM1_yVhKREhjyiAUYmiZKtUJfIe0kUV8cDmg/exec'),
         'view_url' => env('GOOGLE_SHEETS_VIEW_URL', 'https://docs.google.com/spreadsheets/d/12ADRxZIajrQwv8Xh1OcO2pWsZ878nqAI1F_Odrrfnw8/edit?gid=0#gid=0'),
     ],
 
