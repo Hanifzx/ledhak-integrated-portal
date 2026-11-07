@@ -94,7 +94,7 @@ function PhotoInput({ preview, onFileChange, error }) {
     );
 }
 
-function ItemForm({ form, onPhotoChange, photoPreview, onSubmit, onClose, title }) {
+function ItemForm({ show, form, onPhotoChange, photoPreview, onSubmit, onClose, title }) {
     const [showAlert, setShowAlert] = useState(false);
 
     const handleClose = () => {
@@ -107,7 +107,7 @@ function ItemForm({ form, onPhotoChange, photoPreview, onSubmit, onClose, title 
 
     return (
         <>
-            <Modal show title={title} onClose={handleClose}>
+            <Modal show={show} title={title} onClose={handleClose}>
                 <form onSubmit={onSubmit} className="space-y-4">
                     {/* Photo */}
                     <PhotoInput
@@ -185,7 +185,7 @@ function ItemForm({ form, onPhotoChange, photoPreview, onSubmit, onClose, title 
     );
 }
 
-function StatusModal({ item, onClose }) {
+function StatusModal({ show, item, onClose }) {
     const isDipinjam = item?.status === 'Dipinjam';
     const options = isDipinjam ? STATUS_MODAL_DIPINJAM_OPTIONS : STATUS_MODAL_OPTIONS;
     const form = useForm({ status: isDipinjam ? 'Hilang' : (item?.status ?? 'Tersedia'), notes: '' });
@@ -213,7 +213,7 @@ function StatusModal({ item, onClose }) {
 
     return (
         <>
-            <Modal show title="Ubah Status Barang" onClose={handleClose} size="sm">
+            <Modal show={show} title="Ubah Status Barang" onClose={handleClose} size="sm">
                 <form onSubmit={submit} className="space-y-4">
                     <p className="text-body-sm text-muted">Barang: <span className="font-semibold text-ink">{item?.name}</span></p>
 
@@ -275,29 +275,27 @@ function StatusModal({ item, onClose }) {
     );
 }
 
-function DetailModal({ item, onClose }) {
-    if (!item) return null;
-    
+function DetailModal({ show, item, onClose }) {
     return (
-        <Modal show title="Detail Barang" onClose={onClose} size="md">
+        <Modal show={show} title="Detail Barang" onClose={onClose} size="md">
             <div className="space-y-5">
                 <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start">
                     {/* Item Photo */}
                     <div className="w-full sm:w-32 h-40 sm:h-32 rounded-xl border border-border-base bg-bg overflow-hidden flex-shrink-0">
                         <img 
-                            src={item.photo_url || DEFAULT_PHOTO} 
-                            alt={item.name} 
+                            src={item?.photo_url || DEFAULT_PHOTO} 
+                            alt={item?.name ?? ''} 
                             className="w-full h-full object-cover"
                         />
                     </div>
                     {/* Item Info */}
                     <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                            <p className="text-label-caps text-primary font-mono bg-primary-soft px-2 py-0.5 rounded">{item.item_code}</p>
-                            <StatusBadge status={item.status} />
+                            <p className="text-label-caps text-primary font-mono bg-primary-soft px-2 py-0.5 rounded">{item?.item_code}</p>
+                            <StatusBadge status={item?.status} />
                         </div>
-                        <h3 className="text-h2 text-ink mt-2 mb-1">{item.name}</h3>
-                        <p className="text-body-sm text-subtle">{item.category}</p>
+                        <h3 className="text-h2 text-ink mt-2 mb-1">{item?.name}</h3>
+                        <p className="text-body-sm text-subtle">{item?.category}</p>
                     </div>
                 </div>
 
@@ -305,18 +303,18 @@ function DetailModal({ item, onClose }) {
                     <div>
                         <h4 className="text-label-sm text-muted mb-2">Deskripsi Barang</h4>
                         <p className="text-body-md text-ink whitespace-pre-wrap">
-                            {item.description || <span className="text-subtle italic">Tidak ada deskripsi.</span>}
+                            {item?.description || <span className="text-subtle italic">Tidak ada deskripsi.</span>}
                         </p>
                     </div>
                     <div>
                         <h4 className="text-label-sm text-muted mb-2">QR Code</h4>
-                        {item.qr_code_url ? (
+                        {item?.qr_code_url ? (
                             <div className="flex flex-col items-start gap-3">
                                 <div className="p-2 bg-white border border-border-base rounded-xl inline-block shadow-sm">
                                     <img src={item.qr_code_url} alt="QR Code" className="w-32 h-32" />
                                 </div>
                                 <a 
-                                    href={route('admin.inventaris.download-qr', item.id)} 
+                                    href={item?.id ? route('admin.inventaris.download-qr', item.id) : '#'} 
                                     className="flex items-center gap-2 text-label-md text-primary hover:text-primary-dark transition-colors"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">download</span>
@@ -343,22 +341,37 @@ const FILTER_LABELS = ['Semua', 'Tersedia', 'Dipinjam', 'Perbaikan', 'Hilang'];
 
 export default function InventarisIndex({ items, filters }) {
     const [modal, setModal] = useState(null);
+    // Menyimpan data item terakhir supaya animasi exit bisa selesai sebelum item di-clear
+    const [lastItem, setLastItem] = useState(null);
+    const [itemToDelete, setItemToDelete] = useState(null);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [addPhotoPreview, setAddPhotoPreview] = useState(null);
     const [editPhotoPreview, setEditPhotoPreview] = useState(null);
 
     const addForm = useForm({ name: '', category: '', status: 'Tersedia', description: '', photo: null });
     const editForm = useForm({ name: '', category: '', status: 'Tersedia', description: '', photo: null, _method: 'PUT' });
 
+    const closeModal = () => {
+        const prevType = modal?.type;
+        setModal(null);
+        // Bersihkan lastItem setelah animasi selesai (~350ms)
+        if (prevType !== 'add') {
+            setTimeout(() => setLastItem(null), 350);
+        }
+    };
+
     const openEdit = (item) => {
         editForm.setData({ name: item.name, category: item.category, status: item.status, description: item.description ?? '', photo: null, _method: 'PUT' });
         setEditPhotoPreview(item.photo_url || null);
+        setLastItem(item);
         setModal({ type: 'edit', item });
     };
 
     const handleAdd = (e) => {
         e.preventDefault();
         addForm.post(route('admin.inventaris.store'), {
-            onSuccess: () => { toastMsg('itemAdded'); addForm.reset(); setAddPhotoPreview(null); setModal(null); },
+            onSuccess: () => { toastMsg('itemAdded'); addForm.reset(); setAddPhotoPreview(null); closeModal(); },
             onError: toastFailed,
         });
     };
@@ -366,15 +379,22 @@ export default function InventarisIndex({ items, filters }) {
     const handleEdit = (e) => {
         e.preventDefault();
         editForm.post(route('admin.inventaris.update', modal.item.id), {
-            onSuccess: () => { toastMsg('itemUpdated'); setModal(null); },
+            onSuccess: () => { toastMsg('itemUpdated'); closeModal(); },
             onError: toastFailed,
         });
     };
 
-    const handleDelete = (item) => {
-        router.delete(route('admin.inventaris.destroy', item.id), {
-            onSuccess: () => toastMsg('itemDeleted'),
+    const handleDelete = () => {
+        if (!itemToDelete || isDeleting) return;
+        setIsDeleting(true);
+        setDeleteConfirmOpen(false);
+        router.delete(route('admin.inventaris.destroy', itemToDelete.id), {
+            onSuccess: () => {
+                toastMsg('itemDeleted');
+                setItemToDelete(null);
+            },
             onError: toastFailed,
+            onFinish: () => setIsDeleting(false),
         });
     };
 
@@ -401,6 +421,10 @@ export default function InventarisIndex({ items, filters }) {
 
             <div className="max-w-6xl mx-auto space-y-5">
                 <PageHeader
+                    breadcrumb={[
+                        { icon: 'inventory_2', label: 'Inventaris' },
+                        { label: 'Daftar Barang' }
+                    ]}
                     title="Daftar Barang"
                     subtitle={`${items?.total ?? 0} total aset inventaris`}
                     action={
@@ -443,7 +467,7 @@ export default function InventarisIndex({ items, filters }) {
                     {items?.data?.length > 0 ? items.data.map((item) => (
                         <div 
                             key={item.id} 
-                            onClick={() => setModal({ type: 'detail', item })}
+                            onClick={() => { setLastItem(item); setModal({ type: 'detail', item }); }}
                             className="bg-surface rounded-xl border border-border-base shadow-card hover:shadow-card-hover hover:border-primary transition-all group cursor-pointer"
                         >
                             <div className="p-4 flex gap-4 items-start">
@@ -466,7 +490,7 @@ export default function InventarisIndex({ items, filters }) {
                             <div className="border-t border-border-base px-4 py-2.5 flex gap-2 justify-end" onClick={e => e.stopPropagation()}>
                                 {/* Semua item bisa ubah status, termasuk Dipinjam (skenario hilang/rusak saat dipinjam) */}
                                 <button
-                                    onClick={(e) => { e.stopPropagation(); setModal({ type: 'status', item }); }}
+                                    onClick={(e) => { e.stopPropagation(); setLastItem(item); setModal({ type: 'status', item }); }}
                                     className="text-label-md text-primary border border-primary px-3 py-1 rounded-lg hover:bg-primary-soft transition-colors font-medium"
                                 >
                                     Ubah Status
@@ -474,15 +498,18 @@ export default function InventarisIndex({ items, filters }) {
                                 <button onClick={(e) => { e.stopPropagation(); openEdit(item); }} className="flex items-center justify-center text-muted border border-border-base p-1.5 rounded-lg hover:bg-bg transition-colors" title="Edit">
                                     <span className="material-symbols-outlined text-[18px]">edit</span>
                                 </button>
-                                <ConfirmAction 
-                                    onConfirm={() => handleDelete(item)} 
-                                    title={`Hapus "${item.name}"?`} 
-                                    description="Tindakan ini tidak bisa dibatalkan."
+                                <button 
+                                    onClick={(e) => { 
+                                        e.stopPropagation(); 
+                                        setItemToDelete(item); 
+                                        setDeleteConfirmOpen(true); 
+                                    }} 
+                                    disabled={isDeleting}
+                                    className="flex items-center justify-center text-status-err border border-status-err-bg p-1.5 rounded-lg hover:bg-status-err-bg transition-colors disabled:opacity-50" 
+                                    title="Hapus"
                                 >
-                                    <button onClick={(e) => e.stopPropagation()} className="flex items-center justify-center text-status-err border border-status-err-bg p-1.5 rounded-lg hover:bg-status-err-bg transition-colors" title="Hapus">
-                                        <span className="material-symbols-outlined text-[18px]">delete</span>
-                                    </button>
-                                </ConfirmAction>
+                                    <span className="material-symbols-outlined text-[18px]">delete</span>
+                                </button>
                             </div>
                         </div>
                     )) : (
@@ -497,33 +524,50 @@ export default function InventarisIndex({ items, filters }) {
                 <Pagination links={items?.links} />
             </div>
 
-            {/* Modals */}
-            {modal?.type === 'add' && (
-                <ItemForm
-                    form={addForm}
-                    photoPreview={addPhotoPreview}
-                    onPhotoChange={(file, preview) => { addForm.setData('photo', file); setAddPhotoPreview(preview); }}
-                    onSubmit={handleAdd}
-                    onClose={() => { setModal(null); setAddPhotoPreview(null); addForm.reset(); }}
-                    title="Tambah Barang Baru"
-                />
-            )}
-            {modal?.type === 'edit' && (
-                <ItemForm
-                    form={editForm}
-                    photoPreview={editPhotoPreview}
-                    onPhotoChange={(file, preview) => { editForm.setData('photo', file); setEditPhotoPreview(preview); }}
-                    onSubmit={handleEdit}
-                    onClose={() => setModal(null)}
-                    title="Edit Barang"
-                />
-            )}
-            {modal?.type === 'status' && (
-                <StatusModal item={modal.item} onClose={() => setModal(null)} />
-            )}
-            {modal?.type === 'detail' && (
-                <DetailModal item={modal.item} onClose={() => setModal(null)} />
-            )}
+            {/* Modals — selalu render, animasi exit dikontrol lewat prop show */}
+            <ItemForm
+                show={modal?.type === 'add'}
+                form={addForm}
+                photoPreview={addPhotoPreview}
+                onPhotoChange={(file, preview) => { addForm.setData('photo', file); setAddPhotoPreview(preview); }}
+                onSubmit={handleAdd}
+                onClose={() => { closeModal(); setAddPhotoPreview(null); addForm.reset(); }}
+                title="Tambah Barang Baru"
+            />
+            <ItemForm
+                show={modal?.type === 'edit'}
+                form={editForm}
+                photoPreview={editPhotoPreview}
+                onPhotoChange={(file, preview) => { editForm.setData('photo', file); setEditPhotoPreview(preview); }}
+                onSubmit={handleEdit}
+                onClose={closeModal}
+                title="Edit Barang"
+            />
+            <StatusModal
+                show={modal?.type === 'status'}
+                item={modal?.item ?? lastItem}
+                onClose={closeModal}
+            />
+            <DetailModal
+                show={modal?.type === 'detail'}
+                item={modal?.item ?? lastItem}
+                onClose={closeModal}
+            />
+            <ConfirmAction 
+                open={deleteConfirmOpen}
+                onOpenChange={(isOpen) => {
+                    setDeleteConfirmOpen(isOpen);
+                    if (!isOpen) {
+                        setTimeout(() => setItemToDelete(null), 300);
+                    }
+                }}
+                onConfirm={handleDelete} 
+                title={itemToDelete ? `Hapus "${itemToDelete.name}"?` : 'Hapus Barang?'} 
+                description="Tindakan ini tidak bisa dibatalkan."
+                confirmText={isDeleting ? 'Menghapus...' : 'Ya, Hapus'}
+                cancelText="Batal"
+                variant="destructive"
+            />
         </AdminLayout>
     );
 }

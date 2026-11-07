@@ -204,8 +204,11 @@ export default function PeminjamanIndex({ loans, filters, items_available }) {
 
     const handleReturn = (loan) => {
         setIsReturning(loan.id);
+        setReturnConfirmOpen(false);
         router.post(route('admin.peminjaman.return', loan.id), {}, {
-            onSuccess: () => { toastMsg('loanReturned'); if (returnConfirmOpen) setReturnConfirmOpen(false); },
+            onSuccess: () => { 
+                toastMsg('loanReturned'); 
+            },
             onError: toastFailed,
             onFinish: () => setIsReturning(null),
         });
@@ -232,20 +235,23 @@ export default function PeminjamanIndex({ loans, filters, items_available }) {
             <Head title="Peminjaman — LeDHaK" />
 
             <div className="max-w-6xl mx-auto space-y-5">
-                {/* Header */}
-                <div className="flex items-center justify-between gap-3">
-                    <div>
-                        <h2 className="text-h2 sm:text-h1 text-ink">Riwayat Peminjaman</h2>
-                        <p className="text-body-sm text-muted mt-1">Pantau log sirkulasi barang inventaris.</p>
-                    </div>
-                    <button
-                        onClick={() => setShowLoanForm(true)}
-                        className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-lg text-body-sm font-semibold hover:bg-primary-dark transition-colors shadow-card"
-                    >
-                        <span className="material-symbols-outlined text-[18px]">add</span>
-                        Catat Peminjaman
-                    </button>
-                </div>
+                <PageHeader
+                    breadcrumb={[
+                        { icon: 'handshake', label: 'Peminjaman' },
+                        { label: 'Riwayat' }
+                    ]}
+                    title="Riwayat Peminjaman"
+                    subtitle="Pantau log sirkulasi barang inventaris."
+                    action={
+                        <button
+                            onClick={() => setShowLoanForm(true)}
+                            className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-lg text-body-sm font-semibold hover:bg-primary-dark transition-colors shadow-card"
+                        >
+                            <span className="material-symbols-outlined text-[18px]">add</span>
+                            Catat Peminjaman
+                        </button>
+                    }
+                />
 
                 {/* Search + Filter */}
                 <div className="flex flex-col sm:flex-row gap-3">
@@ -291,25 +297,21 @@ export default function PeminjamanIndex({ loans, filters, items_available }) {
                                         </span>
                                     </div>
                                     {loan.status === 'Active' && (
-                                        <ConfirmAction
-                                            onConfirm={() => handleReturn(loan)}
-                                            title="Konfirmasi Pengembalian"
-                                            description={`Selesaikan peminjaman barang "${loan.item?.name}" oleh ${loan.borrower_name}?`}
-                                            confirmText="Selesaikan"
-                                            variant="default"
+                                        <button
+                                            onClick={() => {
+                                                setLoanToReturn(loan);
+                                                setReturnConfirmOpen(true);
+                                            }}
+                                            disabled={isReturning === loan.id}
+                                            className="w-full relative inline-flex items-center justify-center text-label-md text-primary border border-primary px-3 py-2 rounded-lg hover:bg-primary hover:text-on-primary transition-colors font-semibold disabled:opacity-50"
                                         >
-                                            <button
-                                                disabled={isReturning === loan.id}
-                                                className="w-full relative inline-flex items-center justify-center text-label-md text-primary border border-primary px-3 py-2 rounded-lg hover:bg-primary hover:text-on-primary transition-colors font-semibold disabled:opacity-50"
-                                            >
-                                                <span className={isReturning === loan.id ? 'opacity-0' : ''}>Selesaikan Peminjaman</span>
-                                                {isReturning === loan.id && (
-                                                    <span className="absolute inset-0 flex items-center justify-center">
-                                                        <Spinner className="size-4 text-current" />
-                                                    </span>
-                                                )}
-                                            </button>
-                                        </ConfirmAction>
+                                            <span className={isReturning === loan.id ? 'opacity-0' : ''}>Selesaikan Peminjaman</span>
+                                            {isReturning === loan.id && (
+                                                <span className="absolute inset-0 flex items-center justify-center">
+                                                    <Spinner className="size-4 text-current" />
+                                                </span>
+                                            )}
+                                        </button>
                                     )}
                                 </div>
                             </div>
@@ -371,27 +373,23 @@ export default function PeminjamanIndex({ loans, filters, items_available }) {
                                         </td>
                                         <td className="py-3 px-4 text-right">
                                             {loan.status === 'Active' && (
-                                                <ConfirmAction
-                                                    onConfirm={() => handleReturn(loan)}
-                                                    title="Konfirmasi Pengembalian"
-                                                    description={`Selesaikan peminjaman barang "${loan.item?.name}" oleh ${loan.borrower_name}?`}
-                                                    confirmText="Selesaikan"
-                                                    variant="default"
+                                                <button 
+                                                    onClick={() => {
+                                                        setLoanToReturn(loan);
+                                                        setReturnConfirmOpen(true);
+                                                    }}
+                                                    disabled={isReturning === loan.id}
+                                                    className="relative inline-flex items-center justify-center text-label-md text-primary border border-primary px-3 py-1.5 rounded-lg hover:bg-primary hover:text-on-primary transition-colors font-semibold disabled:opacity-50 disabled:pointer-events-none"
                                                 >
-                                                    <button 
-                                                        disabled={isReturning === loan.id}
-                                                        className="relative inline-flex items-center justify-center text-label-md text-primary border border-primary px-3 py-1.5 rounded-lg hover:bg-primary hover:text-on-primary transition-colors font-semibold disabled:opacity-50 disabled:pointer-events-none"
-                                                    >
-                                                        <span className={isReturning === loan.id ? 'opacity-0' : ''}>
-                                                            Selesaikan
+                                                    <span className={isReturning === loan.id ? 'opacity-0' : ''}>
+                                                        Selesaikan
+                                                    </span>
+                                                    {isReturning === loan.id && (
+                                                        <span className="absolute inset-0 flex items-center justify-center">
+                                                            <Spinner className="size-4 text-current" />
                                                         </span>
-                                                        {isReturning === loan.id && (
-                                                            <span className="absolute inset-0 flex items-center justify-center">
-                                                                <Spinner className="size-4 text-current" />
-                                                            </span>
-                                                        )}
-                                                    </button>
-                                                </ConfirmAction>
+                                                    )}
+                                                </button>
                                             )}
                                             {loan.status === 'Returned' && (
                                                 <span className="text-label-md text-status-ok font-medium">Dikembalikan</span>
@@ -420,17 +418,24 @@ export default function PeminjamanIndex({ loans, filters, items_available }) {
                 items_available={items_available}
                 initialItemId={initialItemId}
             />
-            {loanToReturn && (
-                <ConfirmAction
-                    open={returnConfirmOpen}
-                    onOpenChange={setReturnConfirmOpen}
-                    onConfirm={() => handleReturn(loanToReturn)}
-                    title="Konfirmasi Pengembalian"
-                    description={`Selesaikan peminjaman barang "${loanToReturn.item?.name}" oleh ${loanToReturn.borrower_name}?`}
-                    confirmText="Selesaikan"
-                    variant="default"
-                />
-            )}
+            <ConfirmAction
+                open={returnConfirmOpen}
+                onOpenChange={(isOpen) => {
+                    setReturnConfirmOpen(isOpen);
+                    if (!isOpen) {
+                        setTimeout(() => setLoanToReturn(null), 300);
+                    }
+                }}
+                onConfirm={() => {
+                    if (loanToReturn) {
+                        handleReturn(loanToReturn);
+                    }
+                }}
+                title="Konfirmasi Pengembalian"
+                description={`Selesaikan peminjaman barang "${loanToReturn?.item?.name ?? ''}" oleh ${loanToReturn?.borrower_name ?? ''}?`}
+                confirmText="Selesaikan"
+                variant="default"
+            />
         </AdminLayout>
     );
 }

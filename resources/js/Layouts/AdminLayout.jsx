@@ -190,7 +190,7 @@ export default function AdminLayout({ children, title = '' }) {
                 <div className="lg:hidden fixed inset-0 z-50 flex">
                     {/* Backdrop */}
                     <div
-                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        className="absolute inset-0 bg-black/50"
                         onClick={() => setSidebarOpen(false)}
                     />
                     {/* Drawer */}
@@ -210,27 +210,6 @@ export default function AdminLayout({ children, title = '' }) {
 
             {/* ── MAIN CONTENT ── */}
             <div className="flex-1 lg:ml-[260px] flex flex-col min-h-screen">
-
-                {/* Top header */}
-                <header className="sticky top-0 z-40 bg-surface border-b border-border-base h-14 flex items-center justify-between px-4 lg:px-6">
-                    <div className="flex items-center gap-3">
-                        {/* Hamburger — mobile only */}
-                        <button
-                            onClick={() => setSidebarOpen(true)}
-                            className="lg:hidden p-2 -ml-1 rounded-lg text-muted hover:bg-surface-mid hover:text-ink transition-colors"
-                            aria-label="Buka menu"
-                        >
-                            <span className="material-symbols-outlined text-[22px]">menu</span>
-                        </button>
-                        <h1 className="text-body-md lg:text-h3 text-ink font-semibold">{title}</h1>
-                    </div>
-                    <div className="hidden sm:flex items-center gap-2">
-                        <span className="text-label-md text-muted truncate max-w-[200px] lg:max-w-none">
-                            {auth?.user?.name ?? 'Admin'} &nbsp;·&nbsp; LeDHaK UNHAS
-                        </span>
-                    </div>
-                </header>
-
                 {/* Page content — extra bottom padding on mobile so bottom nav doesn't cover content */}
                 <main className="flex-1 p-4 lg:p-6 lg:pb-6" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 5rem)' }}>
                     {children}

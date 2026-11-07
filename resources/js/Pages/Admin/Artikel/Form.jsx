@@ -1,5 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
+import { PageHeader } from '@/Components/Admin/AdminUI';
 
 export default function ArtikelForm({ article }) {
     const isEdit = !!article;
@@ -24,13 +25,23 @@ export default function ArtikelForm({ article }) {
             <Head title={`${isEdit ? 'Edit' : 'Tulis'} Artikel — LeDHaK`} />
 
             <div className="max-w-3xl mx-auto space-y-5">
-                {/* Header */}
-                <div className="flex items-center gap-3">
-                    <Link href={route('admin.artikel.index')} className="p-2 rounded-lg text-muted hover:bg-surface-mid transition-colors">
-                        <span className="material-symbols-outlined text-[20px]">arrow_back</span>
-                    </Link>
-                    <h2 className="text-h1 text-ink">{isEdit ? 'Edit Artikel' : 'Tulis Artikel Baru'}</h2>
-                </div>
+                <PageHeader
+                    breadcrumb={[
+                        { icon: 'article', label: 'Artikel', href: route('admin.artikel.index') },
+                        { label: isEdit ? 'Edit Artikel' : 'Tulis Artikel Baru' }
+                    ]}
+                    title={isEdit ? 'Edit Artikel' : 'Tulis Artikel Baru'}
+                    subtitle={isEdit ? 'Perbarui konten artikel dan status publikasi.' : 'Tulis draf artikel baru untuk portal publik UKM LeDHaK.'}
+                    action={
+                        <Link
+                            href={route('admin.artikel.index')}
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border-base text-body-sm font-medium text-muted hover:text-ink hover:bg-surface-mid transition-colors"
+                        >
+                            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+                            Kembali
+                        </Link>
+                    }
+                />
 
                 <form onSubmit={submit} className="bg-surface rounded-xl border border-border-base shadow-card p-6 space-y-5">
                     {/* Title */}

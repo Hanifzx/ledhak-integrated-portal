@@ -4,6 +4,8 @@
  * Peminjaman, Artikel, dan Laporan.
  */
 
+import { Link } from '@inertiajs/react';
+
 // ── CSS class constants ────────────────────────────────────────────────────
 export const INPUT_CLS =
     'w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink ' +
@@ -13,19 +15,60 @@ export const SELECT_CLS =
     'w-full px-3 py-2 rounded-lg border border-border-base text-body-md text-ink ' +
     'focus:outline-none focus:ring-2 focus:ring-primary bg-surface';
 
+// ── Breadcrumb ─────────────────────────────────────────────────────────────
+/**
+ * Breadcrumb / Eyebrow navigation di atas judul besar halaman.
+ * @param {{ items: { label: string, href?: string, icon?: string }[] }} props
+ */
+export function Breadcrumb({ items = [] }) {
+    if (!items || items.length === 0) return null;
+
+    const firstIcon = items.find(i => i.icon)?.icon;
+
+    return (
+        <nav aria-label="Breadcrumb" className="flex items-center flex-wrap gap-1.5 sm:gap-2 mb-2 text-body-sm text-muted select-none">
+            {firstIcon && (
+                <span className="material-symbols-outlined text-[17px] text-muted flex-shrink-0">
+                    {firstIcon}
+                </span>
+            )}
+            {items.map((item, idx) => {
+                const isLast = idx === items.length - 1;
+                return (
+                    <span key={idx} className="flex items-center gap-1.5 sm:gap-2">
+                        {idx > 0 && <span className="text-border-strong font-normal select-none">/</span>}
+                        {item.href && !isLast ? (
+                            <Link href={item.href} className="hover:text-primary transition-colors font-medium">
+                                {item.label}
+                            </Link>
+                        ) : (
+                            <span className={isLast ? "text-ink font-semibold" : "font-medium"}>
+                                {item.label}
+                            </span>
+                        )}
+                    </span>
+                );
+            })}
+        </nav>
+    );
+}
+
 // ── PageHeader ─────────────────────────────────────────────────────────────
 /**
- * Header baris judul + subtitle + action button (selalu flex-row, button di kanan).
- * @param {{ title: string, subtitle?: string, action?: React.ReactNode }} props
+ * Header baris judul + subtitle + action button + breadcrumb.
+ * @param {{ title: string, subtitle?: React.ReactNode, action?: React.ReactNode, breadcrumb?: { label: string, href?: string, icon?: string }[] }} props
  */
-export function PageHeader({ title, subtitle, action }) {
+export function PageHeader({ title, subtitle, action, breadcrumb = [] }) {
     return (
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-start justify-between gap-3">
             <div>
-                <h2 className="text-h2 sm:text-h1 text-ink">{title}</h2>
-                {subtitle && <p className="text-body-sm text-muted mt-1">{subtitle}</p>}
+                {breadcrumb && breadcrumb.length > 0 && (
+                    <Breadcrumb items={breadcrumb} />
+                )}
+                <h2 className="text-h2 sm:text-h1 text-ink font-bold">{title}</h2>
+                {subtitle && <p className="text-body-sm sm:text-body-md text-muted mt-1">{subtitle}</p>}
             </div>
-            {action}
+            {action && <div className="flex-shrink-0 mt-1">{action}</div>}
         </div>
     );
 }

@@ -39,6 +39,10 @@ export default function LaporanIndex({ logs, filters, total }) {
 
             <div className="max-w-5xl mx-auto space-y-5">
                 <PageHeader
+                    breadcrumb={[
+                        { icon: 'history', label: 'Laporan' },
+                        { label: 'Log Aktivitas' }
+                    ]}
                     title="Log Aktivitas"
                     subtitle={
                         <>Rekam jejak lengkap seluruh perubahan inventaris · <span className="font-semibold text-ink">{total}</span> total log</>

@@ -46,6 +46,10 @@ export default function ArtikelIndex({ articles, filters }) {
 
             <div className="max-w-6xl mx-auto space-y-5">
                 <PageHeader
+                    breadcrumb={[
+                        { icon: 'article', label: 'Artikel' },
+                        { label: 'Manajemen Artikel' }
+                    ]}
                     title="Manajemen Artikel"
                     subtitle={`${articles?.total ?? 0} total artikel`}
                     action={

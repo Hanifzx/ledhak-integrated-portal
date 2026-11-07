@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
+import { PageHeader } from '@/Components/Admin/AdminUI';
 import { toastSuccess, toastError, TOAST_MESSAGES } from '@/Utils/toast';
 
 function Section({ title, icon, children }) {
@@ -91,16 +92,25 @@ export default function PengaturanIndex({ user, system_info, google_sheets_url }
         { key: 'sistem',    icon: 'info',      label: 'Info Sistem' },
     ];
 
+    const TAB_LABELS = {
+        profil: 'Profil Akun',
+        keamanan: 'Keamanan Akun',
+        sistem: 'Info Sistem',
+    };
+
     return (
         <AdminLayout title="Pengaturan">
             <Head title="Pengaturan — LeDHaK" />
 
             <div className="max-w-4xl mx-auto space-y-5">
-                {/* Header */}
-                <div>
-                    <h2 className="text-h1 text-ink">Pengaturan</h2>
-                    <p className="text-body-sm text-muted mt-1">Kelola akun dan konfigurasi sistem.</p>
-                </div>
+                <PageHeader
+                    breadcrumb={[
+                        { icon: 'settings', label: 'Pengaturan' },
+                        { label: TAB_LABELS[activeTab] || 'Profil Akun' }
+                    ]}
+                    title="Pengaturan"
+                    subtitle="Kelola akun dan konfigurasi sistem."
+                />
 
                 {/* Flash message */}
                 {flash?.success && (
@@ -160,6 +170,17 @@ export default function PengaturanIndex({ user, system_info, google_sheets_url }
                                 )}
                             </div>
                         </form>
+                        <div className="pt-4 border-t border-border-base mt-6">
+                            <Link
+                                href={route('logout')}
+                                method="post"
+                                as="button"
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-body-sm font-semibold text-status-err border border-status-err-bg hover:bg-status-err-bg transition-colors"
+                            >
+                                <span className="material-symbols-outlined text-[18px]">logout</span>
+                                Keluar dari Akun
+                            </Link>
+                        </div>
                     </Section>
                 )}
 

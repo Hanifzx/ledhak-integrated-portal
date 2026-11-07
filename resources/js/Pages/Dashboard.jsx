@@ -3,6 +3,7 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import StatusBadge from '@/Components/Admin/StatusBadge';
 import Modal from '@/Components/Admin/Modal';
+import { PageHeader } from '@/Components/Admin/AdminUI';
 import { toastSuccess, toastError, TOAST_MESSAGES } from '@/Utils/toast';
 
 const DEFAULT_PHOTO = '/images/assets/item_default.webp';
@@ -62,7 +63,7 @@ function PhotoInput({ preview, onFileChange, error }) {
     );
 }
 
-function QuickAddItemModal({ onClose }) {
+function QuickAddItemModal({ show, onClose }) {
     const [photoPreview, setPhotoPreview] = useState(null);
     const form = useForm({ name: '', item_code: '', category: '', status: 'Tersedia', description: '', photo: null });
 
@@ -81,7 +82,7 @@ function QuickAddItemModal({ onClose }) {
     };
 
     return (
-        <Modal show title="Tambah Barang Baru" onClose={onClose}>
+        <Modal show={show} title="Tambah Barang Baru" onClose={onClose}>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <PhotoInput
                     preview={photoPreview}
@@ -179,11 +180,15 @@ export default function Dashboard({ metrics, overdue_loans, recent_logs, draft_a
             <Head title="Dashboard — LeDHaK" />
 
             <div className="max-w-6xl mx-auto space-y-5">
-                {/* Welcome */}
-                <div>
-                    <h2 className="text-h2 sm:text-h1 text-ink">Selamat Datang, Admin!</h2>
-                    <p className="text-body-sm sm:text-body-md text-muted mt-1">Ringkasan operasional inventaris UKM LeDHaK UNHAS hari ini.</p>
-                </div>
+                {/* Page Header */}
+                <PageHeader
+                    breadcrumb={[
+                        { icon: 'dashboard', label: 'Beranda' },
+                        { label: 'Ringkasan' }
+                    ]}
+                    title="Selamat Datang, Admin!"
+                    subtitle="Ringkasan operasional inventaris UKM LeDHaK UNHAS hari ini."
+                />
 
                 {/* Metric Cards — 3-col on all breakpoints, compact on mobile */}
                 <div className="grid grid-cols-3 gap-2 sm:gap-4">
@@ -317,7 +322,7 @@ export default function Dashboard({ metrics, overdue_loans, recent_logs, draft_a
                     </div>
                 </div>
             </div>
-            {showAddModal && <QuickAddItemModal onClose={() => setShowAddModal(false)} />}
+            <QuickAddItemModal show={showAddModal} onClose={() => setShowAddModal(false)} />
         </AdminLayout>
     );
 }
