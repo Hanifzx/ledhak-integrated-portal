@@ -143,7 +143,7 @@ export default function AdminLayout({ children, title = '' }) {
                     />
                     <div className="flex flex-col justify-center">
                         <p className="text-body-md lg:text-h3 text-white leading-none font-bold tracking-tight">LeDHaK UNHAS</p>
-                        <p className="text-label-caps text-white mt-1 leading-none font-medium">Inventory Portal</p>
+                        <p className="text-label-caps text-white mt-1 leading-none font-medium">Inventory Portal v1.0</p>
                     </div>
                 </div>
             </div>

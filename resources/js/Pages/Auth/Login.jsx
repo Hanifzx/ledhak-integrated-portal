@@ -58,13 +58,13 @@ export default function Login({ status, canResetPassword }) {
                     {/* Badge Nama Portal */}
                     <div className="mt-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 border border-white/25 text-white text-sm font-semibold tracking-wide backdrop-blur-sm">
                         <span className="material-symbols-outlined text-[18px]">inventory_2</span>
-                        <span>Portal Terintegrasi</span>
+                        <span>LeDHaK Inventory Portal v1.0</span>
                     </div>
                 </div>
 
                 {/* Subtle bottom credit */}
                 <p className="absolute bottom-6 text-caption text-white/60">
-                    &copy; {new Date().getFullYear()} UKM LeDHaK UNHAS
+                    &copy; {new Date().getFullYear()} UKM LeDHaK UNHAS &bull; LeDHaK Inventory Portal v1.0
                 </p>
             </div>
 
@@ -239,7 +239,7 @@ export default function Login({ status, canResetPassword }) {
 
                     {/* Mobile Copyright (< lg) */}
                     <div className="lg:hidden mt-5 text-center text-[11px] text-muted/60 leading-normal">
-                        &copy; {new Date().getFullYear()} UKM LeDHaK UNHAS &bull; All rights reserved.
+                        &copy; {new Date().getFullYear()} UKM LeDHaK UNHAS &bull; LeDHaK Inventory Portal v1.0
                     </div>
 
                 </div>
